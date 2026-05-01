@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MintyTraders — AI-Powered Funded Account Trading</title>
+<meta name="description" content="MintyTraders uses proprietary AI to trade your funded futures account automatically. Institutional-grade execution, zero screen time required." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- Reset & base ---------- */
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #ffffff;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+  }
+
+  /* Subtle grain/noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+  }
+
+  /* Soft brand glows in background */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(0,229,204,0.08), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(192,132,252,0.08), transparent 45%);
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+
+  :root {
+    --mint: #40d8c0;
+    --purple: #9040f0;
+    --gold: #f5c842;
+    --bg: #0a0a0f;
+    --card: #111118;
+    --card-2: #161620;
+    --border: rgba(255,255,255,0.08);
+    --text-dim: rgba(255,255,255,0.65);
+    --text-mute: rgba(255,255,255,0.45);
+    --grad: linear-gradient(90deg, #40d8c0, #c8a828, #b060e0, #9040f0);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ---------- Reusable button ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--grad);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 15px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    box-shadow: 0 8px 24px rgba(0,229,204,0.18), 0 4px 16px rgba(192,132,252,0.18);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,229,204,0.28), 0 6px 22px rgba(192,132,252,0.28);
+    filter: brightness(1.05);
+  }
+  .btn-lg {
+    padding: 18px 38px;
+    font-size: 17px;
+  }
+  .btn-xl {
+    padding: 22px 48px;
+    font-size: 18px;
+  }
+
+  /* Gradient text helper */
+  .gradient-text {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(10,10,15,0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+  }
+  .logo-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .logo {
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .logo .minty {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .logo .traders {
+    color: #ffffff;
+  }
+  /* Gold animated sweep line under logo */
+  .logo-sweep {
+    position: relative;
+    margin-top: 6px;
+    height: 1px;
+    width: 100%;
+    background: rgba(245,158,11,0.18);
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .logo-sweep::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -40%;
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(245,158,11,0.95), transparent);
+    animation: sweep 3.2s linear infinite;
+    box-shadow: 0 0 8px rgba(245,158,11,0.6);
+  }
+  @keyframes sweep {
+    0% { left: -40%; }
+    100% { left: 110%; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    padding: 80px 0 80px;
+    overflow: hidden;
+  }
+  #particles {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  .live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid rgba(0,229,204,0.35);
+    background: rgba(0,229,204,0.08);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #d4fffb;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff3b3b;
+    box-shadow: 0 0 10px #ff3b3b;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .hero h1 {
+    margin-top: 22px;
+    font-size: clamp(34px, 5.4vw, 60px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 .accent {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p.sub {
+    margin: 22px auto 0;
+    color: var(--text-dim);
+    font-size: clamp(15px, 1.5vw, 18px);
+    max-width: 720px;
+  }
+
+  /* VSL placeholder */
+  .vsl-wrap {
+    margin: 40px auto 0;
+    max-width: 800px;
+    width: 100%;
+  }
+  .vsl {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #14141d 0%, #0d0d14 100%);
+    border: 1px solid var(--border);
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(255,255,255,0.02),
+      0 0 60px rgba(0,229,204,0.08),
+      0 0 80px rgba(192,132,252,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s ease;
+  }
+  .vsl:hover { transform: translateY(-2px); }
+  .vsl::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(0,229,204,0.08), transparent 60%),
+      radial-gradient(circle at 50% 50%, rgba(192,132,252,0.06), transparent 70%);
+    pointer-events: none;
+  }
+  .vsl-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-dim);
+  }
+  .play-btn {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--grad);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 8px rgba(0,229,204,0.12), 0 0 0 16px rgba(0,229,204,0.06);
+    transition: transform 0.2s ease;
+  }
+  .vsl:hover .play-btn { transform: scale(1.05); }
+  .play-btn svg { width: 32px; height: 32px; margin-left: 4px; }
+  .vsl-text { font-size: 14px; letter-spacing: 0.5px; }
+
+  .hero-cta-wrap {
+    margin-top: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-cta-note {
+    color: var(--text-mute);
+    font-size: 13px;
+  }
+
+  /* ---------- Social proof bar ---------- */
+  .ticker {
+    margin-top: 30px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    overflow: hidden;
+    position: relative;
+  }
+  .ticker-track {
+    display: flex;
+    gap: 48px;
+    padding: 16px 0;
+    width: max-content;
+    animation: scroll 38s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ---------- Sections ---------- */
+  section.block {
+    padding: 100px 0;
+    position: relative;
+    z-index: 2;
+  }
+  .section-head {
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto 56px;
+  }
+  .section-head h2 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .section-head p {
+    color: var(--text-dim);
+    margin-top: 14px;
+    font-size: 17px;
+  }
+
+  /* Stat cards */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .stat-card {
+    position: relative;
+    padding: 32px 28px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: transform 0.25s ease;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 18px;
+    padding: 1px;
+    background: var(--grad);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .stat-card:hover { transform: translateY(-4px); }
+  .stat-card:hover::before { opacity: 1; }
+  .stat-card:hover { box-shadow: 0 18px 48px rgba(0,229,204,0.10), 0 18px 48px rgba(192,132,252,0.10); }
+  .stat-value {
+    font-size: clamp(30px, 3.5vw, 44px);
+    font-weight: 900;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+  .stat-desc {
+    margin-top: 10px;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+
+  /* Trade table */
+  .trade-table-wrap {
+    margin-top: 36px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    overflow: hidden;
+  }
+  table.trades {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  table.trades th, table.trades td {
+    padding: 14px 18px;
+    text-align: left;
+  }
+  table.trades thead {
+    background: rgba(255,255,255,0.03);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-size: 12px;
+    color: var(--text-mute);
+  }
+  table.trades tbody tr {
+    border-top: 1px solid var(--border);
+  }
+  table.trades td.profit {
+    color: var(--mint);
+    font-weight: 700;
+  }
+  table.trades td.dir {
+    color: #ff8b8b;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-size: 12px;
+  }
+  .disclaimer {
+    margin-top: 18px;
+    color: var(--text-mute);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  /* How it works */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .step {
+    position: relative;
+    padding: 32px 28px;
+    background: var(--card);
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+  .step:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,229,204,0.35);
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--grad);
+    font-weight: 800;
+    font-size: 20px;
+    color: #0a0a0f;
+    box-shadow: 0 6px 20px rgba(0,229,204,0.25);
+  }
+  .step-icon {
+    margin-left: 12px;
+    font-size: 26px;
+    vertical-align: middle;
+  }
+  .step h3 {
+    margin-top: 18px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .step p {
+    margin-top: 10px;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+
+  /* Signal cards */
+  .signal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .signal-card {
+    padding: 26px;
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease;
+  }
+  .signal-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 16px;
+    padding: 1px;
+    background: var(--grad);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .signal-card:hover { transform: translateY(-4px); }
+  .signal-card:hover::before { opacity: 1; }
+  .signal-emoji { font-size: 30px; }
+  .signal-card h4 {
+    margin-top: 14px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .signal-card p {
+    margin-top: 8px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* Who this is for */
+  .audience {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  .aud-col {
+    padding: 32px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  .aud-col h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .aud-col.yes { border-color: rgba(0,229,204,0.25); }
+  .aud-col.no { border-color: rgba(255,90,90,0.18); }
+  .aud-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .aud-col li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+  .aud-col .icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    margin-top: 2px;
+  }
+  .aud-col.yes .icon {
+    background: rgba(0,229,204,0.15);
+    color: var(--mint);
+  }
+  .aud-col.no .icon {
+    background: rgba(255,90,90,0.12);
+    color: #ff8b8b;
+  }
+
+  /* CTA section */
+  .cta-block {
+    text-align: center;
+    padding: 80px 32px;
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(0,229,204,0.10), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(192,132,252,0.10), transparent 50%),
+      var(--card);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-block h2 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .cta-block p {
+    color: var(--text-dim);
+    margin: 18px auto 0;
+    font-size: 17px;
+    max-width: 620px;
+  }
+  .cta-actions {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .privacy-note {
+    color: var(--text-mute);
+    font-size: 13px;
+  }
+  .trust-badges {
+    margin-top: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.02);
+  }
+  .badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mint);
+    box-shadow: 0 0 8px var(--mint);
+  }
+
+  /* Footer */
+  footer {
+    position: relative;
+    z-index: 2;
+    border-top: 1px solid var(--border);
+    padding: 60px 0 40px;
+    background: rgba(255,255,255,0.015);
+  }
+  .foot-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+  }
+  .foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+  }
+  .foot-links a {
+    color: var(--text-dim);
+    font-size: 14px;
+    transition: color 0.2s ease;
+  }
+  .foot-links a:hover { color: #ffffff; }
+  .foot-meta {
+    margin-top: 26px;
+    color: var(--text-mute);
+    font-size: 13px;
+  }
+  .risk {
+    margin-top: 18px;
+    color: var(--text-mute);
+    font-size: 12px;
+    line-height: 1.6;
+    max-width: 1000px;
+  }
+
+  /* ---------- Reveal animations ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .stat-grid, .steps, .signal-grid { grid-template-columns: 1fr 1fr; }
+    .audience { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .stat-grid, .steps, .signal-grid { grid-template-columns: 1fr; }
+    section.block { padding: 70px 0; }
+    .hero { padding: 60px 0 60px; }
+    .play-btn { width: 70px; height: 70px; }
+    table.trades th, table.trades td { padding: 12px 12px; font-size: 13px; }
+    .cta-block { padding: 60px 22px; }
+    .nav-inner { padding: 12px 0; }
+    .btn { padding: 12px 20px; font-size: 14px; }
+    .btn-lg { padding: 16px 28px; font-size: 15px; }
+    .btn-xl { padding: 18px 32px; font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <div class="logo-wrap">
+      <div class="logo">
+        <img src="logo.jpg" alt="MintyTraders" style="height:48px; width:auto; object-fit:contain;">
+      </div>
+    </div>
+    <a href="#apply" class="btn">Apply Now</a>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <canvas id="particles"></canvas>
+  <div class="container hero-inner">
+    <span class="live-pill"><span class="live-dot"></span>LIVE — Watch This First</span>
+    <h1>We Let AI Trade Your <span class="accent">Funded Account.</span> Automatically.</h1>
+    <p class="sub">LIZA uses proprietary institutional data and AI macro analysis to trade your funded account automatically — 24/7, with zero emotion and institutional-grade precision.</p>
+
+    <div class="vsl-wrap">
+      <!-- VSL_PLACEHOLDER -->
+      <!-- Replace src with your VSL embed URL -->
+      <div class="vsl" id="vsl">
+        <div class="vsl-content">
+          <div class="play-btn" aria-label="Play video">
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="vsl-text">Video Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-cta-wrap">
+      <a href="#apply" class="btn btn-xl">Apply For Access →</a>
+      <span class="hero-cta-note">Limited spots available. Application required.</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ SOCIAL PROOF TICKER ============ -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span class="ticker-item">✅ +$22,175 — Day 1 Live</span>
+    <span class="ticker-item">✅ 14 Active Accounts</span>
+    <span class="ticker-item">✅ Live Since March 2026</span>
+    <span class="ticker-item">✅ ES • NQ • YM Futures</span>
+    <span class="ticker-item">✅ Multi-Broker Support</span>
+    <!-- Duplicate for seamless loop -->
+    <span class="ticker-item">✅ +$22,175 — Day 1 Live</span>
+    <span class="ticker-item">✅ 14 Active Accounts</span>
+    <span class="ticker-item">✅ Live Since March 2026</span>
+    <span class="ticker-item">✅ ES • NQ • YM Futures</span>
+    <span class="ticker-item">✅ Multi-Broker Support</span>
+  </div>
+</div>
+
+<!-- ============ RESULTS ============ -->
+<section class="block" id="results">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Real Trades. <span class="gradient-text">Real Money.</span></h2>
+      <p>Not backtests. Not paper accounts. Actual fills executed by LIZA on live, funded accounts.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card reveal">
+        <div class="stat-value">+$22,175</div>
+        <div class="stat-desc">Day 1 live trading. 2 trades. 100% win rate.</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-value">+$437,000</div>
+        <div class="stat-desc">6-month backtest. $50k starting capital.</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-value">14 Accounts</div>
+        <div class="stat-desc">Active clients across Apex, Tradovate, Rithmic.</div>
+      </div>
+    </div>
+
+    <div class="trade-table-wrap reveal">
+      <table class="trades">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Symbol</th>
+            <th>Side</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>P&amp;L</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mar 13</td>
+            <td>ES</td>
+            <td class="dir">SHORT</td>
+            <td>5,312.50</td>
+            <td>5,290.00</td>
+            <td class="profit">+$11,250</td>
+          </tr>
+          <tr>
+            <td>Mar 13</td>
+            <td>NQ</td>
+            <td class="dir">SHORT</td>
+            <td>18,450.00</td>
+            <td>18,340.75</td>
+            <td class="profit">+$10,925</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="disclaimer">Past performance does not guarantee future results.</p>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="block" id="how">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>How It Works</h2>
+      <p>Three steps. Less than 24 hours from application to live trading.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step-num">1</span><span class="step-icon">📝</span>
+        <h3>Apply</h3>
+        <p>Fill out our application. We review your setup and onboard you within 24 hours.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step-num">2</span><span class="step-icon">🔌</span>
+        <h3>Connect</h3>
+        <p>Link your funded account (Apex, Tradovate, Rithmic, MT4/MT5, NinjaTrader). Takes 10 minutes.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step-num">3</span><span class="step-icon">💸</span>
+        <h3>Profit</h3>
+        <p>LIZA starts trading automatically. Monitor your results from your personal dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE TECHNOLOGY ============ -->
+<section class="block" id="liza">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>The Technology Behind <span class="gradient-text">MintyTraders</span></h2>
+      <p>LIZA is a proprietary autonomous trading system. We don't share our methodology — that's the edge.</p>
+    </div>
+
+    <div class="signal-grid">
+      <div class="signal-card reveal">
+        <div class="signal-emoji">🏛️</div>
+        <h4>Institutional Data</h4>
+        <p>LIZA processes real-time institutional order flow data unavailable to retail traders.</p>
+      </div>
+      <div class="signal-card reveal">
+        <div class="signal-emoji">🧠</div>
+        <h4>AI Macro Analysis</h4>
+        <p>Every morning, LIZA's AI brain analyzes the macro environment and sets the daily trading thesis before the open.</p>
+      </div>
+      <div class="signal-card reveal">
+        <div class="signal-emoji">⚡</div>
+        <h4>Confluence Engine</h4>
+        <p>Multiple proprietary signals must align simultaneously before LIZA places a single trade. No guessing.</p>
+      </div>
+      <div class="signal-card reveal">
+        <div class="signal-emoji">🛡️</div>
+        <h4>Risk Management</h4>
+        <p>Every trade has a hard stop loss. Daily drawdown limits. Your funded account rules are respected automatically.</p>
+      </div>
+      <div class="signal-card reveal">
+        <div class="signal-emoji">⏱️</div>
+        <h4>24/7 Monitoring</h4>
+        <p>LIZA never sleeps. It monitors pre-market, RTH, and overnight sessions — always watching for the setup.</p>
+      </div>
+      <div class="signal-card reveal">
+        <div class="signal-emoji">📊</div>
+        <h4>Multi-Broker Execution</h4>
+        <p>Trades execute automatically across Apex, Tradovate, Rithmic, MT4/MT5, NinjaTrader, and TradeLocker.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHO THIS IS FOR ============ -->
+<section class="block" id="audience">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Is This For You?</h2>
+      <p>We don't take everyone. Honesty saves us both time.</p>
+    </div>
+
+    <div class="audience">
+      <div class="aud-col yes reveal">
+        <h3>✅ YES — This Is For You If</h3>
+        <ul>
+          <li><span class="icon">✓</span><span>You have a funded account (Apex, Topstep, Tradovate, etc.)</span></li>
+          <li><span class="icon">✓</span><span>You want passive income from trading</span></li>
+          <li><span class="icon">✓</span><span>You're tired of emotional trading and revenge trades</span></li>
+          <li><span class="icon">✓</span><span>You want institutional-grade execution without the institutional team</span></li>
+        </ul>
+      </div>
+      <div class="aud-col no reveal">
+        <h3>❌ NOT FOR YOU If</h3>
+        <ul>
+          <li><span class="icon">✕</span><span>You're looking for a get-rich-quick scheme</span></li>
+          <li><span class="icon">✕</span><span>You don't have a funded account yet</span></li>
+          <li><span class="icon">✕</span><span>You want to control every single trade manually</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APPLICATION CTA ============ -->
+<section class="block" id="apply">
+  <div class="container">
+    <div class="cta-block reveal">
+      <h2>Ready to Have AI Trade <span class="gradient-text">For You?</span></h2>
+      <p>We only accept clients we can genuinely help. Apply below and our team will reach out within 24 hours.</p>
+      <div class="cta-actions">
+        <!-- Replace href with your Typeform / application URL -->
+        <a href="#" class="btn btn-xl">Apply For Access →</a>
+        <span class="privacy-note">🔒 Your information is kept private. No spam.</span>
+      </div>
+      <div class="trust-badges">
+        <span class="badge"><span class="dot"></span>Secure Application</span>
+        <span class="badge"><span class="dot"></span>24hr Response</span>
+        <span class="badge"><span class="dot"></span>Limited Spots</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <div class="foot-top">
+      <div class="logo-wrap">
+        <div class="logo">
+          <img src="logo.jpg" alt="MintyTraders" style="height:40px; width:auto; object-fit:contain;">
+        </div>
+      </div>
+      <div class="foot-links">
+        <a href="#">Dashboard Login</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="foot-meta">© 2026 MintyTraders. Powered by LIZA AI.</div>
+    <p class="risk">
+      <strong>Risk Disclaimer:</strong> Trading futures, options, and other derivatives involves substantial risk of loss and is not suitable for every investor. The valuation of futures may fluctuate, and as a result, clients may lose more than their original investment. Past performance is not indicative of future results. MintyTraders does not guarantee any specific outcome or profit. Any decision to trade is your own and you do so at your own risk. Hypothetical or simulated performance results have inherent limitations. No representation is being made that any account will or is likely to achieve profits or losses similar to those shown. Please consult a licensed financial advisor before making investment decisions.
+    </p>
+  </div>
+</footer>
+
+<script>
+  /* ---------- Reveal on scroll ---------- */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* ---------- Hero particle background (subtle, brand-tinted) ---------- */
+  (function () {
+    const canvas = document.getElementById('particles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, particles, dpr;
+
+    const COLORS = ['rgba(0,229,204,', 'rgba(192,132,252,'];
+    const COUNT = window.innerWidth < 700 ? 28 : 56;
+
+    function resize() {
+      dpr = window.devicePixelRatio || 1;
+      const hero = canvas.parentElement;
+      w = hero.offsetWidth;
+      h = hero.offsetHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function spawn() {
+      particles = [];
+      for (let i = 0; i < COUNT; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 0.6 + Math.random() * 1.6,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          c: COLORS[Math.floor(Math.random() * COLORS.length)],
+          a: 0.15 + Math.random() * 0.35
+        });
+      }
+    }
+
+    function step() {
+      ctx.clearRect(0, 0, w, h);
+      // Light connecting lines
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const q = particles[j];
+          const dx = p.x - q.x, dy = p.y - q.y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < 110) {
+            ctx.strokeStyle = 'rgba(255,255,255,' + (0.04 * (1 - d/110)) + ')';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.stroke();
+          }
+        }
+
+        ctx.beginPath();
+        ctx.fillStyle = p.c + p.a + ')';
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+
+    resize();
+    spawn();
+    step();
+    window.addEventListener('resize', () => { resize(); spawn(); });
+  })();
+</script>
+
+</body>
+</html>
