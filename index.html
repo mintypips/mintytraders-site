@@ -95,6 +95,17 @@
     box-shadow: 0 12px 32px rgba(0,229,204,0.28), 0 6px 22px rgba(192,132,252,0.28);
     filter: brightness(1.05);
   }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: none;
+  }
+  .btn-outline:hover {
+    border-color: rgba(64,216,192,0.55);
+    background: rgba(255,255,255,0.03);
+    box-shadow: none;
+    filter: none;
+  }
   .btn-lg {
     padding: 18px 38px;
     font-size: 17px;
@@ -179,7 +190,7 @@
   /* ---------- Hero ---------- */
   .hero {
     position: relative;
-    padding: 80px 0 80px;
+    padding: 100px 0 80px;
     overflow: hidden;
   }
   #particles {
@@ -192,7 +203,7 @@
     position: relative;
     z-index: 2;
     text-align: center;
-    max-width: 880px;
+    max-width: 920px;
     margin: 0 auto;
   }
   .live-pill {
@@ -213,8 +224,8 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #ff3b3b;
-    box-shadow: 0 0 10px #ff3b3b;
+    background: #40d8c0;
+    box-shadow: 0 0 10px #40d8c0;
     animation: pulse 1.4s ease-in-out infinite;
   }
   @keyframes pulse {
@@ -223,7 +234,7 @@
   }
   .hero h1 {
     margin-top: 22px;
-    font-size: clamp(34px, 5.4vw, 60px);
+    font-size: clamp(38px, 6vw, 68px);
     font-weight: 900;
     line-height: 1.05;
     letter-spacing: -0.02em;
@@ -235,109 +246,54 @@
     -webkit-text-fill-color: transparent;
   }
   .hero p.sub {
-    margin: 22px auto 0;
+    margin: 24px auto 0;
     color: var(--text-dim);
-    font-size: clamp(15px, 1.5vw, 18px);
-    max-width: 720px;
+    font-size: clamp(16px, 1.6vw, 19px);
+    max-width: 780px;
   }
-
-  /* VSL placeholder */
-  .vsl-wrap {
-    margin: 40px auto 0;
-    max-width: 800px;
-    width: 100%;
-  }
-  .vsl {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 16px;
-    overflow: hidden;
-    background: linear-gradient(180deg, #14141d 0%, #0d0d14 100%);
-    border: 1px solid var(--border);
-    box-shadow:
-      0 30px 80px rgba(0,0,0,0.6),
-      0 0 0 1px rgba(255,255,255,0.02),
-      0 0 60px rgba(0,229,204,0.08),
-      0 0 80px rgba(192,132,252,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.25s ease;
-  }
-  .vsl:hover { transform: translateY(-2px); }
-  .vsl::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 50% 50%, rgba(0,229,204,0.08), transparent 60%),
-      radial-gradient(circle at 50% 50%, rgba(192,132,252,0.06), transparent 70%);
-    pointer-events: none;
-  }
-  .vsl-content {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    color: var(--text-dim);
-  }
-  .play-btn {
-    width: 88px;
-    height: 88px;
-    border-radius: 50%;
-    background: var(--grad);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 0 8px rgba(0,229,204,0.12), 0 0 0 16px rgba(0,229,204,0.06);
-    transition: transform 0.2s ease;
-  }
-  .vsl:hover .play-btn { transform: scale(1.05); }
-  .play-btn svg { width: 32px; height: 32px; margin-left: 4px; }
-  .vsl-text { font-size: 14px; letter-spacing: 0.5px; }
 
   .hero-cta-wrap {
-    margin-top: 36px;
+    margin-top: 38px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  .hero-cta-note {
-    color: var(--text-mute);
-    font-size: 13px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
   }
 
-  /* ---------- Social proof bar ---------- */
-  .ticker {
-    margin-top: 30px;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,0.015);
+  /* Hero stats bar */
+  .hero-stats {
+    margin: 56px auto 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    max-width: 980px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(255,255,255,0.025);
     overflow: hidden;
-    position: relative;
+    backdrop-filter: blur(8px);
   }
-  .ticker-track {
-    display: flex;
-    gap: 48px;
-    padding: 16px 0;
-    width: max-content;
-    animation: scroll 38s linear infinite;
-    white-space: nowrap;
+  .hero-stat {
+    padding: 22px 18px;
+    text-align: center;
+    border-right: 1px solid var(--border);
   }
-  .ticker-item {
-    color: var(--text-dim);
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
+  .hero-stat:last-child { border-right: none; }
+  .hero-stat-value {
+    font-size: clamp(18px, 2vw, 22px);
+    font-weight: 800;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.01em;
   }
-  @keyframes scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+  .hero-stat-label {
+    margin-top: 6px;
+    color: var(--text-mute);
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
   }
 
   /* ---------- Sections ---------- */
@@ -597,65 +553,181 @@
     color: #ff8b8b;
   }
 
-  /* CTA section */
-  .cta-block {
-    text-align: center;
-    padding: 80px 32px;
-    border-radius: 28px;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(0,229,204,0.10), transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(192,132,252,0.10), transparent 50%),
-      var(--card);
-    border: 1px solid var(--border);
+  /* ---------- Pricing ---------- */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    align-items: stretch;
+  }
+  .price-card {
     position: relative;
-    overflow: hidden;
-  }
-  .cta-block h2 {
-    font-size: clamp(28px, 4vw, 42px);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
-  .cta-block p {
-    color: var(--text-dim);
-    margin: 18px auto 0;
-    font-size: 17px;
-    max-width: 620px;
-  }
-  .cta-actions {
-    margin-top: 30px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 14px;
+    padding: 36px 30px;
+    border-radius: 22px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    transition: transform 0.25s ease, border-color 0.25s ease;
   }
-  .privacy-note {
+  .price-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,229,204,0.30);
+  }
+  .price-card.featured {
+    background:
+      radial-gradient(circle at 50% 0%, rgba(0,229,204,0.10), transparent 60%),
+      radial-gradient(circle at 50% 100%, rgba(192,132,252,0.10), transparent 60%),
+      var(--card-2);
+    border: 1px solid transparent;
+    box-shadow:
+      0 20px 60px rgba(0,229,204,0.10),
+      0 20px 60px rgba(192,132,252,0.10);
+    transform: scale(1.02);
+  }
+  .price-card.featured::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 22px;
+    padding: 1px;
+    background: var(--grad);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+  .price-card.featured:hover { transform: translateY(-4px) scale(1.02); }
+  .featured-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 16px;
+    background: var(--grad);
+    color: #0a0a0f;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(0,229,204,0.28), 0 4px 16px rgba(192,132,252,0.28);
+    white-space: nowrap;
+  }
+  .price-tier-name {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .price-amount {
+    margin-top: 14px;
+    font-size: clamp(30px, 3.4vw, 40px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .price-card.featured .price-amount {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .price-amount-sub {
+    margin-top: 6px;
     color: var(--text-mute);
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 20px;
   }
-  .trust-badges {
-    margin-top: 22px;
+  .price-divider {
+    margin: 24px 0;
+    height: 1px;
+    background: var(--border);
+  }
+  .price-features {
+    list-style: none;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
   }
-  .badge {
+  .price-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+  .price-features li .check {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(64,216,192,0.15);
+    color: var(--mint);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    font-size: 13px;
-    color: var(--text-dim);
-    background: rgba(255,255,255,0.02);
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    margin-top: 2px;
   }
-  .badge .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--mint);
-    box-shadow: 0 0 8px var(--mint);
+  .price-cta {
+    margin-top: auto;
+    width: 100%;
+    text-align: center;
+  }
+  .price-cta .btn {
+    width: 100%;
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+    overflow: hidden;
+    transition: border-color 0.25s ease;
+  }
+  .faq-item[open] {
+    border-color: rgba(0,229,204,0.30);
+  }
+  .faq-item summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 20px 24px;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: '+';
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text-dim);
+    transition: transform 0.25s ease;
+  }
+  .faq-item[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .faq-item .faq-body {
+    padding: 0 24px 22px;
+    color: var(--text-dim);
+    font-size: 15px;
+    line-height: 1.65;
   }
 
   /* Footer */
@@ -709,21 +781,30 @@
   }
 
   /* ---------- Responsive ---------- */
+  @media (max-width: 980px) {
+    .pricing-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
+    .price-card.featured { transform: none; }
+    .price-card.featured:hover { transform: translateY(-4px); }
+  }
   @media (max-width: 900px) {
     .stat-grid, .steps, .signal-grid { grid-template-columns: 1fr 1fr; }
     .audience { grid-template-columns: 1fr; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    .hero-stat:nth-child(2) { border-right: none; }
+    .hero-stat:nth-child(1), .hero-stat:nth-child(2) { border-bottom: 1px solid var(--border); }
   }
   @media (max-width: 640px) {
     .stat-grid, .steps, .signal-grid { grid-template-columns: 1fr; }
     section.block { padding: 70px 0; }
-    .hero { padding: 60px 0 60px; }
-    .play-btn { width: 70px; height: 70px; }
-    table.trades th, table.trades td { padding: 12px 12px; font-size: 13px; }
-    .cta-block { padding: 60px 22px; }
+    .hero { padding: 70px 0 60px; }
     .nav-inner { padding: 12px 0; }
     .btn { padding: 12px 20px; font-size: 14px; }
     .btn-lg { padding: 16px 28px; font-size: 15px; }
     .btn-xl { padding: 18px 32px; font-size: 16px; }
+    table.trades th, table.trades td { padding: 12px 12px; font-size: 13px; }
+    .hero-stats { grid-template-columns: 1fr; }
+    .hero-stat { border-right: none; border-bottom: 1px solid var(--border); }
+    .hero-stat:last-child { border-bottom: none; }
   }
 </style>
 </head>
@@ -737,7 +818,7 @@
         <img src="logo.jpg" alt="MintyTraders" style="height:48px; width:auto; object-fit:contain;">
       </div>
     </div>
-    <a href="https://whop.com/minty-pips-academy/liza-ai-trading-software" class="btn">Apply Now</a>
+    <a href="https://whop.com/minty-pips-academy/liza-ai-trading-software" class="btn">Get Started</a>
   </div>
 </nav>
 
@@ -745,46 +826,63 @@
 <header class="hero">
   <canvas id="particles"></canvas>
   <div class="container hero-inner">
-    <span class="live-pill"><span class="live-dot"></span>LIVE — Watch This First</span>
-    <h1>We Let AI Trade Your <span class="accent">Funded Account.</span> Automatically.</h1>
+    <span class="live-pill"><span class="live-dot"></span>LIVE — Trading Now</span>
+    <h1>The AI That Trades the Market. <span class="accent">Automatically.</span></h1>
     <p class="sub">LIZA uses proprietary institutional data and AI macro analysis to trade your funded account automatically — 24/7, with zero emotion and institutional-grade precision.</p>
 
-    <div class="vsl-wrap">
-      <!-- VSL_PLACEHOLDER -->
-      <!-- Replace src with your VSL embed URL -->
-      <div class="vsl" id="vsl">
-        <div class="vsl-content">
-          <div class="play-btn" aria-label="Play video">
-            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-          <div class="vsl-text">Video Loading...</div>
-        </div>
-      </div>
+    <div class="hero-cta-wrap">
+      <a href="https://whop.com/minty-pips-academy/liza-ai-trading-software" class="btn btn-xl">Get Started</a>
+      <a href="#results" class="btn btn-xl btn-outline">See Results</a>
     </div>
 
-    <div class="hero-cta-wrap">
-      <a href="https://whop.com/minty-pips-academy/liza-ai-trading-software" class="btn btn-xl">Apply For Access →</a>
-      <span class="hero-cta-note">Limited spots available. Application required.</span>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-value">14+ Accounts</div>
+        <div class="hero-stat-label">Active Clients</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">Live Since</div>
+        <div class="hero-stat-label">March 2026</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">ES • NQ • YM</div>
+        <div class="hero-stat-label">Futures Markets</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">Multi-Broker</div>
+        <div class="hero-stat-label">Apex • Tradovate • Rithmic</div>
+      </div>
     </div>
   </div>
 </header>
 
-<!-- ============ SOCIAL PROOF TICKER ============ -->
-<div class="ticker" aria-hidden="true">
-  <div class="ticker-track">
-    <span class="ticker-item">✅ +$22,175 — Day 1 Live</span>
-    <span class="ticker-item">✅ 14 Active Accounts</span>
-    <span class="ticker-item">✅ Live Since March 2026</span>
-    <span class="ticker-item">✅ ES • NQ • YM Futures</span>
-    <span class="ticker-item">✅ Multi-Broker Support</span>
-    <!-- Duplicate for seamless loop -->
-    <span class="ticker-item">✅ +$22,175 — Day 1 Live</span>
-    <span class="ticker-item">✅ 14 Active Accounts</span>
-    <span class="ticker-item">✅ Live Since March 2026</span>
-    <span class="ticker-item">✅ ES • NQ • YM Futures</span>
-    <span class="ticker-item">✅ Multi-Broker Support</span>
+<!-- ============ HOW IT WORKS ============ -->
+<section class="block" id="how">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>How It Works</h2>
+      <p>Three steps. Less than 24 hours from application to live trading.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step-num">1</span><span class="step-icon">📝</span>
+        <h3>Apply</h3>
+        <p>Fill out our application. We review your setup and onboard you within 24 hours.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step-num">2</span><span class="step-icon">🔌</span>
+        <h3>Connect</h3>
+        <p>Link your funded account (Apex, Tradovate, Rithmic, MT4/MT5, NinjaTrader). Takes 10 minutes.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step-num">3</span><span class="step-icon">💸</span>
+        <h3>Profit</h3>
+        <p>LIZA starts trading automatically. Monitor your results from your personal dashboard.</p>
+      </div>
+    </div>
   </div>
-</div>
+</section>
 
 <!-- ============ RESULTS ============ -->
 <section class="block" id="results">
@@ -843,34 +941,6 @@
     </div>
 
     <p class="disclaimer">Past performance does not guarantee future results.</p>
-  </div>
-</section>
-
-<!-- ============ HOW IT WORKS ============ -->
-<section class="block" id="how">
-  <div class="container">
-    <div class="section-head reveal">
-      <h2>How It Works</h2>
-      <p>Three steps. Less than 24 hours from application to live trading.</p>
-    </div>
-
-    <div class="steps">
-      <div class="step reveal">
-        <span class="step-num">1</span><span class="step-icon">📝</span>
-        <h3>Apply</h3>
-        <p>Fill out our application. We review your setup and onboard you within 24 hours.</p>
-      </div>
-      <div class="step reveal">
-        <span class="step-num">2</span><span class="step-icon">🔌</span>
-        <h3>Connect</h3>
-        <p>Link your funded account (Apex, Tradovate, Rithmic, MT4/MT5, NinjaTrader). Takes 10 minutes.</p>
-      </div>
-      <div class="step reveal">
-        <span class="step-num">3</span><span class="step-icon">💸</span>
-        <h3>Profit</h3>
-        <p>LIZA starts trading automatically. Monitor your results from your personal dashboard.</p>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -947,22 +1017,125 @@
   </div>
 </section>
 
-<!-- ============ APPLICATION CTA ============ -->
-<section class="block" id="apply">
+<!-- ============ PRICING ============ -->
+<section class="block" id="pricing">
   <div class="container">
-    <div class="cta-block reveal">
-      <h2>Ready to Have AI Trade <span class="gradient-text">For You?</span></h2>
-      <p>We only accept clients we can genuinely help. Apply below and our team will reach out within 24 hours.</p>
-      <div class="cta-actions">
-        <!-- Replace href with your Typeform / application URL -->
-        <a href="https://whop.com/minty-pips-academy/liza-ai-trading-software" class="btn btn-xl">Apply For Access →</a>
-        <span class="privacy-note">🔒 Your information is kept private. No spam.</span>
+    <div class="section-head reveal">
+      <h2>Start Trading With <span class="gradient-text">LIZA</span></h2>
+      <p>Choose the tier that fits your setup. Scale up as you scale your accounts.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Starter -->
+      <div class="price-card reveal">
+        <div class="price-tier-name">Starter</div>
+        <div class="price-amount">$997</div>
+        <div class="price-amount-sub">one-time setup</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><span class="check">✓</span><span>1 funded account connected</span></li>
+          <li><span class="check">✓</span><span>ES futures only</span></li>
+          <li><span class="check">✓</span><span>Dashboard access</span></li>
+          <li><span class="check">✓</span><span>Email support</span></li>
+          <li><span class="check">✓</span><span>Basic risk settings</span></li>
+        </ul>
+        <div class="price-cta">
+          <a href="https://whop.com/minty-pips-academy/liza-ai-trading-software" class="btn btn-lg">Get Started</a>
+        </div>
       </div>
-      <div class="trust-badges">
-        <span class="badge"><span class="dot"></span>Secure Application</span>
-        <span class="badge"><span class="dot"></span>24hr Response</span>
-        <span class="badge"><span class="dot"></span>Limited Spots</span>
+
+      <!-- Pro -->
+      <div class="price-card featured reveal">
+        <span class="featured-badge">⭐ Most Popular</span>
+        <div class="price-tier-name">Pro</div>
+        <div class="price-amount">$2,500</div>
+        <div class="price-amount-sub">setup + $100/mo</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><span class="check">✓</span><span>Up to 6 accounts</span></li>
+          <li><span class="check">✓</span><span>ES + NQ + YM</span></li>
+          <li><span class="check">✓</span><span>Priority support</span></li>
+          <li><span class="check">✓</span><span>Custom risk settings</span></li>
+          <li><span class="check">✓</span><span>Real-time trade alerts</span></li>
+          <li><span class="check">✓</span><span>Discord community access</span></li>
+        </ul>
+        <div class="price-cta">
+          <a href="https://whop.com/minty-pips-academy/liza-ai-trading-software" class="btn btn-lg">Get Started</a>
+        </div>
       </div>
+
+      <!-- Enterprise -->
+      <div class="price-card reveal">
+        <div class="price-tier-name">Enterprise</div>
+        <div class="price-amount">Contact Us</div>
+        <div class="price-amount-sub">custom pricing</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><span class="check">✓</span><span>Unlimited accounts</span></li>
+          <li><span class="check">✓</span><span>All markets</span></li>
+          <li><span class="check">✓</span><span>Dedicated support</span></li>
+          <li><span class="check">✓</span><span>Custom strategy tuning</span></li>
+          <li><span class="check">✓</span><span>White-label available</span></li>
+        </ul>
+        <div class="price-cta">
+          <a href="mailto:laythbanks@gmail.com" class="btn btn-lg btn-outline">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="block" id="faq">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Frequently Asked <span class="gradient-text">Questions</span></h2>
+      <p>The most common questions we get from new clients.</p>
+    </div>
+
+    <div class="faq-list">
+      <details class="faq-item reveal">
+        <summary>How does LIZA actually trade my account?</summary>
+        <div class="faq-body">
+          You connect your funded account (Apex, Tradovate, Rithmic, MT4/MT5, NinjaTrader, or TradeLocker) and LIZA executes trades automatically based on its proprietary signal engine. You retain full control of your account at all times — pause, stop, or close at any moment from your dashboard.
+        </div>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Will LIZA blow my funded account?</summary>
+        <div class="faq-body">
+          LIZA respects your prop firm's drawdown rules automatically. Every trade has a hard stop loss, daily loss limits are enforced, and the system shuts down if it approaches your account's max drawdown. No system can guarantee profits, but risk management is built into every trade.
+        </div>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Which prop firms are supported?</summary>
+        <div class="faq-body">
+          We support Apex, Topstep, Tradovate, Rithmic-based firms, MT4/MT5 brokers, NinjaTrader, and TradeLocker. If you're not sure whether your firm works, contact us and we'll confirm before you sign up.
+        </div>
+      </details>
+      <details class="faq-item reveal">
+        <summary>What markets does LIZA trade?</summary>
+        <div class="faq-body">
+          LIZA actively trades the major US index futures: ES (S&amp;P 500), NQ (Nasdaq 100), and YM (Dow). Starter accounts get ES only; Pro accounts get all three. Enterprise clients can request additional markets.
+        </div>
+      </details>
+      <details class="faq-item reveal">
+        <summary>How fast can I get started?</summary>
+        <div class="faq-body">
+          Most clients are live within 24 hours of signup. The flow is: pay → onboarding call → connect your account → LIZA starts trading on the next session.
+        </div>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Do I need trading experience?</summary>
+        <div class="faq-body">
+          No trading experience required to use LIZA — the system handles execution. You do need a funded account already in place. If you don't have one yet, we can point you toward reputable prop firms during onboarding.
+        </div>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Is there a refund policy?</summary>
+        <div class="faq-body">
+          Setup fees cover real engineering and onboarding work, so they're non-refundable once your account is connected and live. The monthly Pro fee can be cancelled at any time. Reach out to our team if you have questions before signing up.
+        </div>
+      </details>
     </div>
   </div>
 </section>
@@ -977,10 +1150,11 @@
         </div>
       </div>
       <div class="foot-links">
-        <a href="#">Dashboard Login</a>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms</a>
-        <a href="#">Contact</a>
+        <a href="#how">How It Works</a>
+        <a href="#results">Results</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="mailto:laythbanks@gmail.com">Contact</a>
       </div>
     </div>
     <div class="foot-meta">© 2026 MintyTraders. Powered by LIZA AI.</div>
