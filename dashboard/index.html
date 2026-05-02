@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MintyTraders Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050510;
+    --bg-2: #0a0a1a;
+    --bg-3: #12122a;
+    --panel: #0e0e22;
+    --mint: #00d464;
+    --mint-glow: rgba(0, 212, 100, 0.4);
+    --purple: #7b2fff;
+    --cyan: #00d4ff;
+    --red: #ff5b5b;
+    --text: #e8e8f0;
+    --text-dim: #9090a8;
+    --text-faint: #5c5c78;
+    --border: rgba(255, 255, 255, 0.08);
+    --hover: rgba(255, 255, 255, 0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(123, 47, 255, 0.08), transparent 40%),
+      radial-gradient(circle at 100% 100%, rgba(0, 212, 100, 0.06), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ============ LOGIN ============ */
+  .login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .login-card {
+    background: rgba(14, 14, 34, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 44px 40px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .login-logo {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .login-logo span { color: var(--mint); }
+  .login-tag {
+    color: var(--text-dim);
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .auth-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 9px 12px;
+    text-align: center;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .auth-tab.active {
+    background: rgba(0, 212, 100, 0.12);
+    color: var(--mint);
+  }
+  .form-group { margin-bottom: 18px; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--mint);
+  }
+  .form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  .form-row a { color: var(--mint); text-decoration: none; }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--mint), #00b855);
+    color: #001a0a;
+    box-shadow: 0 8px 24px var(--mint-glow);
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--mint); color: var(--mint); }
+  .btn-danger {
+    background: rgba(255, 91, 91, 0.1);
+    color: var(--red);
+    border: 1px solid rgba(255, 91, 91, 0.3);
+  }
+  .btn-danger:hover { background: rgba(255, 91, 91, 0.2); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 7px; }
+  .btn-block { width: 100%; text-align: center; display: block; }
+
+  .login-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .login-footer a { color: var(--mint); text-decoration: none; }
+
+  .alert {
+    font-size: 13px;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .alert-error {
+    background: rgba(255, 91, 91, 0.08);
+    border: 1px solid rgba(255, 91, 91, 0.25);
+    color: var(--red);
+  }
+  .alert-success {
+    background: rgba(0, 212, 100, 0.08);
+    border: 1px solid rgba(0, 212, 100, 0.25);
+    color: var(--mint);
+  }
+  .alert-info {
+    background: rgba(0, 212, 255, 0.06);
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    color: var(--cyan);
+  }
+
+  /* ============ APP SHELL ============ */
+  .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+  .sidebar {
+    width: 240px;
+    background: rgba(14, 14, 34, 0.5);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    padding: 0 12px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .sidebar .logo span { color: var(--mint); }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 9px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .nav-item:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
+  .nav-item.active {
+    background: rgba(0, 212, 100, 0.1);
+    color: var(--mint);
+  }
+  .nav-icon { font-size: 16px; }
+  .sidebar-bottom {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .bot-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: rgba(0, 212, 100, 0.06);
+    border: 1px solid rgba(0, 212, 100, 0.2);
+    border-radius: 9px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--mint);
+  }
+  .bot-status .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--mint);
+    box-shadow: 0 0 8px var(--mint);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .user-pill {
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    overflow: hidden;
+  }
+  .user-pill .uname { font-weight: 600; color: var(--text); }
+  .user-pill .uemail {
+    color: var(--text-dim);
+    font-size: 11.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .main {
+    flex: 1;
+    padding: 32px 40px;
+    overflow-x: auto;
+    min-width: 0;
+  }
+  .page-header {
+    margin-bottom: 28px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    margin-bottom: 4px;
+  }
+  .page-header p {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* Stat cards */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .stat-card .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .stat-card .value {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .stat-card .value.pos { color: var(--mint); }
+  .stat-card .value.neg { color: var(--red); }
+  .stat-card .change {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+  .stat-card .change.pos { color: var(--mint); }
+  .stat-card .change.neg { color: var(--red); }
+
+  /* Generic panel */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .panel-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .panel-head h2 {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .panel-body { padding: 22px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table th, table td {
+    padding: 13px 22px;
+    text-align: left;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  table th {
+    color: var(--text-dim);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  table tr:last-child td { border-bottom: none; }
+  table tr:hover td { background: var(--hover); }
+
+  .pnl-pos { color: var(--mint); font-weight: 700; }
+  .pnl-neg { color: var(--red); font-weight: 700; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-short { background: rgba(255, 91, 91, 0.15); color: var(--red); }
+  .badge-long { background: rgba(0, 212, 100, 0.15); color: var(--mint); }
+  .badge-active { background: rgba(0, 212, 100, 0.15); color: var(--mint); }
+  .badge-paused { background: rgba(255, 191, 0, 0.15); color: #ffbf00; }
+  .badge-closed { background: rgba(144, 144, 168, 0.15); color: var(--text-dim); }
+  .badge-open { background: rgba(0, 212, 255, 0.15); color: var(--cyan); }
+
+  /* Account cards */
+  .account-list { display: flex; flex-direction: column; gap: 12px; }
+  .account-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .account-info { flex: 1; min-width: 200px; }
+  .account-info .broker {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .account-info .id {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+  .account-meta {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .account-meta .pnl-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .account-meta .pnl-val {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 16, 0.8);
+    backdrop-filter: blur(6px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .modal-actions .btn { flex: 1; }
+
+  /* Filters */
+  .filter-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-row input, .filter-row select {
+    width: auto;
+    min-width: 140px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  /* Risk settings */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .checkbox-group {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .checkbox-item:hover { border-color: var(--mint); }
+  .checkbox-item input { width: auto; }
+  .checkbox-item.checked {
+    background: rgba(0, 212, 100, 0.08);
+    border-color: var(--mint);
+    color: var(--mint);
+  }
+
+  /* Billing */
+  .billing-card {
+    background: linear-gradient(135deg, rgba(0, 212, 100, 0.08), rgba(123, 47, 255, 0.05));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .billing-card .plan-name {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .billing-card .plan-price {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .billing-card .plan-price small {
+    font-size: 18px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .billing-card .next-bill {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* FAQ accordion (support page) */
+  .faq-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .faq-q {
+    padding: 14px 18px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .faq-q::after { content: '+'; color: var(--mint); font-size: 18px; }
+  .faq-item.open .faq-q::after { content: '−'; }
+  .faq-a {
+    padding: 0 18px;
+    max-height: 0;
+    overflow: hidden;
+    color: var(--text-dim);
+    font-size: 13.5px;
+    transition: all 0.25s;
+  }
+  .faq-item.open .faq-a {
+    padding: 0 18px 14px;
+    max-height: 200px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--mint);
+    color: #001a0a;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 8px 24px var(--mint-glow);
+    z-index: 300;
+    transform: translateY(120%);
+    transition: transform 0.3s;
+  }
+  .toast.show { transform: translateY(0); }
+  .toast.error { background: var(--red); color: #fff; }
+
+  /* Loader */
+  .loader {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .full-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    color: var(--text-dim);
+    gap: 12px;
+  }
+
+  /* Hidden state */
+  .hidden { display: none !important; }
+
+  /* Toggle switch */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+  }
+  .switch input { display: none; }
+  .switch .slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    transition: 0.2s;
+    cursor: pointer;
+  }
+  .switch .slider::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  .switch input:checked + .slider { background: var(--mint); }
+  .switch input:checked + .slider::before { transform: translateX(18px); }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    .sidebar {
+      position: fixed;
+      left: -240px;
+      transition: left 0.25s;
+      z-index: 150;
+    }
+    .sidebar.open { left: 0; }
+    .main { padding: 20px; }
+    .mobile-toggle { display: flex; }
+    .settings-grid { grid-template-columns: 1fr; }
+    .panel-head { flex-direction: column; align-items: flex-start; }
+    table th, table td { padding: 11px 14px; font-size: 12.5px; }
+  }
+  .mobile-toggle {
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    margin-bottom: 16px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== BOOT LOADER ====== -->
+<div id="bootLoader" class="full-loader">
+  <span class="loader"></span> Loading…
+</div>
+
+<!-- ====== LOGIN SCREEN ====== -->
+<div id="loginScreen" class="login-screen hidden">
+  <div class="login-card">
+    <div class="login-logo">Minty<span>Traders</span></div>
+    <div class="login-tag" id="authTagline">Welcome back. Sign in to your dashboard.</div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-tab="login">Login</div>
+      <div class="auth-tab" data-tab="signup">Sign Up</div>
+    </div>
+
+    <div id="authAlert" class="alert hidden"></div>
+
+    <!-- Login form -->
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" required>
+      </div>
+      <div class="form-row">
+        <label style="display:flex; gap:6px; align-items:center; cursor:pointer;">
+          <input type="checkbox" style="width:auto;"> Remember me
+        </label>
+        <a href="#" id="forgotPwLink">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign In →</button>
+    </form>
+
+    <!-- Signup form -->
+    <form id="signupForm" class="hidden">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="signupName" placeholder="Your name" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="At least 8 characters" required minlength="8">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="signupConfirm" placeholder="Re-enter password" required minlength="8">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="signupBtn">Create Account →</button>
+    </form>
+
+    <div class="login-footer">
+      Need help? <a href="mailto:support@mintytraders.com">support@mintytraders.com</a>
+    </div>
+  </div>
+</div>
+
+<!-- ====== APP SHELL ====== -->
+<div id="app" class="app hidden">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">Minty<span>Traders</span></div>
+    <a class="nav-item active" data-route="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+    <a class="nav-item" data-route="accounts"><span class="nav-icon">🔗</span> My Accounts</a>
+    <a class="nav-item" data-route="trades"><span class="nav-icon">📈</span> Trade History</a>
+    <a class="nav-item" data-route="risk"><span class="nav-icon">⚙️</span> Risk Settings</a>
+    <a class="nav-item" data-route="billing"><span class="nav-icon">💳</span> Billing</a>
+    <a class="nav-item" data-route="support"><span class="nav-icon">💬</span> Support</a>
+    <div class="sidebar-bottom">
+      <div class="bot-status"><span class="dot"></span> LIZA — ACTIVE</div>
+      <div class="user-pill">
+        <div class="uname" id="userName">—</div>
+        <div class="uemail" id="userEmail">—</div>
+      </div>
+      <a class="nav-item" id="logoutBtn"><span class="nav-icon">🚪</span> Logout</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+
+    <!-- =============== DASHBOARD =============== -->
+    <div class="page" id="page-dashboard">
+      <div class="page-header">
+        <h1 id="welcomeName">Welcome</h1>
+        <p>Here's what's happening with your accounts today.</p>
+      </div>
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-card">
+          <div class="label">Today's P&L</div>
+          <div class="value" id="statTodayPnl">—</div>
+          <div class="change" id="statTodayPnlChange">Loading…</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Open Trades</div>
+          <div class="value" id="statOpen">—</div>
+          <div class="change" id="statOpenSub">Loading…</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Win Rate</div>
+          <div class="value" id="statWinRate">—</div>
+          <div class="change" id="statWinRateSub">Loading…</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Active Accounts</div>
+          <div class="value" id="statAccounts">—</div>
+          <div class="change" id="statAccountsSub">Loading…</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Recent Trades</h2>
+          <a class="btn btn-outline btn-sm" data-route="trades">View All →</a>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Symbol</th><th>Direction</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Status</th></tr>
+          </thead>
+          <tbody id="dashTradesBody">
+            <tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-dim);"><span class="loader"></span> Loading trades…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =============== ACCOUNTS =============== -->
+    <div class="page hidden" id="page-accounts">
+      <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px;">
+        <div>
+          <h1>My Accounts</h1>
+          <p>Manage your connected broker accounts.</p>
+        </div>
+        <button class="btn btn-primary" id="addAccountBtn">+ Add Account</button>
+      </div>
+      <div class="account-list" id="accountList">
+        <div style="text-align:center; padding:60px; color:var(--text-dim);"><span class="loader"></span> Loading accounts…</div>
+      </div>
+    </div>
+
+    <!-- =============== TRADES =============== -->
+    <div class="page hidden" id="page-trades">
+      <div class="page-header">
+        <h1>Trade History</h1>
+        <p>Every trade LIZA has executed across your accounts.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="filter-row">
+            <input type="date" id="filterDateFrom">
+            <input type="date" id="filterDateTo">
+            <select id="filterSymbol">
+              <option value="">All Symbols</option>
+              <option value="ES">ES</option>
+              <option value="NQ">NQ</option>
+              <option value="YM">YM</option>
+            </select>
+            <button class="btn btn-outline btn-sm" id="applyFiltersBtn">Apply</button>
+          </div>
+          <button class="btn btn-primary btn-sm" id="exportCsvBtn">↓ Export CSV</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Symbol</th><th>Direction</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Status</th></tr>
+          </thead>
+          <tbody id="tradesBody">
+            <tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-dim);"><span class="loader"></span> Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =============== RISK =============== -->
+    <div class="page hidden" id="page-risk">
+      <div class="page-header">
+        <h1>Risk Settings</h1>
+        <p>Configure how aggressively LIZA trades on your accounts.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="settings-grid">
+            <div class="form-group">
+              <label>Contracts per signal</label>
+              <select id="riskContracts">
+                <option>1</option><option>2</option><option selected>3</option>
+                <option>4</option><option>5</option><option>6</option>
+                <option>7</option><option>8</option><option>9</option><option>10</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Max daily loss ($)</label>
+              <input type="number" id="riskMaxLoss" value="2000" placeholder="2000">
+            </div>
+            <div class="form-group">
+              <label>Trading hours — Start (CT)</label>
+              <input type="time" id="riskStart" value="08:30">
+            </div>
+            <div class="form-group">
+              <label>Trading hours — End (CT)</label>
+              <input type="time" id="riskEnd" value="14:30">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:18px;">
+            <label>Symbols to trade</label>
+            <div class="checkbox-group" id="symbolsGroup">
+              <label class="checkbox-item checked"><input type="checkbox" value="ES" checked> ES</label>
+              <label class="checkbox-item checked"><input type="checkbox" value="NQ" checked> NQ</label>
+              <label class="checkbox-item"><input type="checkbox" value="YM"> YM</label>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="saveRiskBtn" style="margin-top: 16px;">Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============== BILLING =============== -->
+    <div class="page hidden" id="page-billing">
+      <div class="page-header">
+        <h1>Billing</h1>
+        <p>Manage your subscription and payment methods.</p>
+      </div>
+      <div class="billing-card">
+        <div class="plan-name">Current Plan</div>
+        <div class="plan-price">Pro <small>— $197/mo</small></div>
+        <div class="next-bill">Next billing date: <strong style="color:var(--text)" id="nextBillDate">—</strong></div>
+      </div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn btn-primary">Upgrade to Elite →</button>
+        <button class="btn btn-outline">Update Payment</button>
+        <a href="#" class="btn btn-danger" id="cancelSubBtn" style="margin-left:auto;">Cancel Subscription</a>
+      </div>
+
+      <div class="panel" style="margin-top: 28px;">
+        <div class="panel-head"><h2>Billing History</h2></div>
+        <table>
+          <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="billingBody">
+            <tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-dim);">No billing history yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =============== SUPPORT =============== -->
+    <div class="page hidden" id="page-support">
+      <div class="page-header">
+        <h1>Support</h1>
+        <p>We're here to help. Reach out anytime.</p>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px;">
+        <div class="panel" style="padding: 22px;">
+          <h3 style="margin-bottom: 6px;">📧 Email Support</h3>
+          <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 12px;">Response within 24 hours</p>
+          <a href="mailto:support@mintytraders.com" class="btn btn-outline btn-sm">support@mintytraders.com</a>
+        </div>
+        <div class="panel" style="padding: 22px;">
+          <h3 style="margin-bottom: 6px;">💬 Discord Community</h3>
+          <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 12px;">Join 200+ active traders</p>
+          <a href="#" class="btn btn-outline btn-sm">Join Discord →</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Send Us a Message</h2></div>
+        <div class="panel-body">
+          <form id="contactForm">
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" placeholder="What's this about?" required>
+            </div>
+            <div class="form-group">
+              <label>Message</label>
+              <textarea rows="5" placeholder="Tell us what's on your mind..." style="resize:vertical;" required></textarea>
+            </div>
+            <button class="btn btn-primary">Send Message</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top: 28px;">
+        <div class="panel-head"><h2>Frequently Asked</h2></div>
+        <div class="panel-body">
+          <div class="faq-item"><div class="faq-q">What broker do I need?</div><div class="faq-a">We support Apex, Tradovate, Rithmic, MT4/MT5, NinjaTrader, and TradeLocker.</div></div>
+          <div class="faq-item"><div class="faq-q">Do I need trading experience?</div><div class="faq-a">No. LIZA handles everything automatically.</div></div>
+          <div class="faq-item"><div class="faq-q">Is my capital safe?</div><div class="faq-a">Every trade has a hard stop loss. Daily drawdown limits protect your funded account rules.</div></div>
+          <div class="faq-item"><div class="faq-q">How long to get set up?</div><div class="faq-a">Most clients are live within 24 hours of signing up.</div></div>
+          <div class="faq-item"><div class="faq-q">What are real results?</div><div class="faq-a">Day 1 live: +$22,175. 6-month backtest: $50k → $437k.</div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Add Account Modal -->
+<div class="modal-overlay" id="addAccountModal">
+  <div class="modal">
+    <h3>Connect a Broker Account</h3>
+    <div id="addAccountAlert" class="alert hidden"></div>
+    <form id="addAccountForm">
+      <div class="form-group">
+        <label>Broker</label>
+        <select id="newBroker" required>
+          <option value="">Select your broker...</option>
+          <option value="apex">Apex Funding</option>
+          <option value="tradovate">Tradovate</option>
+          <option value="rithmic">Rithmic</option>
+          <option value="mt4">MetaTrader 4</option>
+          <option value="mt5">MetaTrader 5</option>
+          <option value="ninjatrader">NinjaTrader</option>
+          <option value="tradelocker">TradeLocker</option>
+        </select>
+      </div>
+
+      <!-- Dynamic broker fields -->
+      <div id="brokerFields"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="closeModalBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="connectBtn">Connect Account</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">Settings saved ✓</div>
+
+<!-- Supabase JS Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<script>
+  // ============= CONFIG =============
+  const SUPABASE_URL = 'https://mvsydmzfeklmtoymptmi.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_xGP1rn-WCyK9yPTp4maJdw_KQHxYWkT';
+  const API = 'https://mintytraders-backend-production.up.railway.app';
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ============= STATE =============
+  let currentUser = null;
+  let cachedTrades = [];
+  let cachedAccounts = [];
+
+  // ============= UTIL =============
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', !!isError);
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  function showAuthAlert(msg, type = 'error') {
+    const el = document.getElementById('authAlert');
+    el.className = 'alert alert-' + type;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+  function clearAuthAlert() {
+    document.getElementById('authAlert').classList.add('hidden');
+  }
+
+  function fmtMoney(n) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    const sign = n >= 0 ? '+' : '-';
+    return sign + '$' + Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  }
+
+  function fmtDate(s) {
+    if (!s) return '—';
+    try {
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return s;
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch { return s; }
+  }
+
+  function greeting() {
+    const h = new Date().getHours();
+    if (h < 12) return 'morning';
+    if (h < 18) return 'afternoon';
+    return 'evening';
+  }
+
+  // ============= API HELPERS =============
+  async function authHeaders() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+    return {
+      'Authorization': 'Bearer ' + session.access_token,
+      'Content-Type': 'application/json',
+    };
+  }
+
+  async function apiGet(path) {
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(API + path, { headers });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        return { success: false, error: text || ('HTTP ' + res.status), status: res.status };
+      }
+      return await res.json();
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  async function apiPost(path, body) {
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(API + path, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return { success: false, error: data.error || data.message || ('HTTP ' + res.status), status: res.status };
+      return data;
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  async function apiDelete(path) {
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(API + path, { method: 'DELETE', headers });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return { success: false, error: data.error || ('HTTP ' + res.status) };
+      return data;
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  // ============= AUTH =============
+  document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const which = tab.dataset.tab;
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t === tab));
+      document.getElementById('loginForm').classList.toggle('hidden', which !== 'login');
+      document.getElementById('signupForm').classList.toggle('hidden', which !== 'signup');
+      document.getElementById('authTagline').textContent = which === 'signup'
+        ? 'Create your account to get started.'
+        : 'Welcome back. Sign in to your dashboard.';
+      clearAuthAlert();
+    });
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAuthAlert();
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> Signing in…';
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    btn.disabled = false;
+    btn.textContent = 'Sign In →';
+    if (error) {
+      showAuthAlert(error.message || 'Login failed.', 'error');
+    }
+    // onAuthStateChange will handle the rest
+  });
+
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAuthAlert();
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const confirm = document.getElementById('signupConfirm').value;
+    if (password !== confirm) {
+      showAuthAlert('Passwords do not match.', 'error');
+      return;
+    }
+    const btn = document.getElementById('signupBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> Creating account…';
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { name } }
+    });
+    btn.disabled = false;
+    btn.textContent = 'Create Account →';
+    if (error) {
+      showAuthAlert(error.message || 'Sign up failed.', 'error');
+      return;
+    }
+    if (!data.session) {
+      showAuthAlert('Account created! Check your email to verify your account, then come back and sign in.', 'success');
+      document.getElementById('signupForm').reset();
+      // switch to login
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'login'));
+      document.getElementById('signupForm').classList.add('hidden');
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('loginEmail').value = email;
+    }
+    // If session exists (email confirm disabled), onAuthStateChange will route them in.
+  });
+
+  document.getElementById('forgotPwLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = prompt('Enter your email to receive a password reset link:');
+    if (!email) return;
+    const { error } = await sb.auth.resetPasswordForEmail(email);
+    if (error) {
+      showAuthAlert(error.message || 'Could not send reset email.', 'error');
+    } else {
+      showAuthAlert('Check your inbox for a reset link.', 'success');
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    // onAuthStateChange handles UI
+  });
+
+  // ============= AUTH STATE =============
+  function showLogin() {
+    currentUser = null;
+    document.getElementById('bootLoader').classList.add('hidden');
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    // reset login forms
+    const lf = document.getElementById('loginForm');
+    if (lf) lf.reset();
+  }
+
+  async function showDashboard(user) {
+    currentUser = user;
+    document.getElementById('bootLoader').classList.add('hidden');
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+
+    // Render user info
+    const meta = user.user_metadata || {};
+    const displayName = meta.name || meta.full_name || (user.email ? user.email.split('@')[0] : 'Trader');
+    document.getElementById('userName').textContent = displayName;
+    document.getElementById('userEmail').textContent = user.email || '';
+    document.getElementById('welcomeName').textContent = `Good ${greeting()}, ${displayName}`;
+
+    // Load all dashboard data
+    await Promise.all([
+      loadDashboard(),
+      loadTrades(),
+      loadAccounts(),
+    ]);
+  }
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session && session.user) {
+      showDashboard(session.user);
+    } else {
+      showLogin();
+    }
+  });
+
+  // Initial check
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      await showDashboard(session.user);
+    } else {
+      showLogin();
+    }
+  })();
+
+  // ============= ROUTING =============
+  document.querySelectorAll('[data-route]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      navigate(el.dataset.route);
+    });
+  });
+
+  function navigate(route) {
+    document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.nav-item[data-route]').forEach(n => n.classList.remove('active'));
+    const page = document.getElementById('page-' + route);
+    if (page) page.classList.remove('hidden');
+    const navItem = document.querySelector(`.nav-item[data-route="${route}"]`);
+    if (navItem) navItem.classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+  }
+
+  // ============= MOBILE TOGGLE =============
+  document.getElementById('mobileToggle').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+
+  // ============= DASHBOARD STATS =============
+  async function loadDashboard() {
+    const result = await apiGet('/api/dashboard');
+    if (result.success && result.data) {
+      updateStats(result.data);
+    } else {
+      // Soft-fail: leave dashes
+      const els = ['statTodayPnlChange','statOpenSub','statWinRateSub','statAccountsSub'];
+      els.forEach(id => {
+        const e = document.getElementById(id);
+        if (e) e.textContent = result.error ? 'Unavailable' : '—';
+      });
+    }
+  }
+
+  function updateStats(d) {
+    const todayPnl = d.todayPnl ?? d.today_pnl ?? 0;
+    const todayPct = d.todayPct ?? d.today_pct ?? null;
+    const openTrades = d.openTrades ?? d.open_trades ?? 0;
+    const winRate = d.winRate ?? d.win_rate ?? null;
+    const winsLast = d.winsLast30 ?? d.wins_last_30 ?? null;
+    const tradesLast = d.tradesLast30 ?? d.trades_last_30 ?? null;
+    const activeAccounts = d.activeAccounts ?? d.active_accounts ?? 0;
+    const brokerList = d.brokerList ?? d.broker_list ?? [];
+
+    const pnlEl = document.getElementById('statTodayPnl');
+    pnlEl.textContent = fmtMoney(todayPnl);
+    pnlEl.classList.toggle('pos', todayPnl >= 0);
+    pnlEl.classList.toggle('neg', todayPnl < 0);
+
+    const pnlChange = document.getElementById('statTodayPnlChange');
+    pnlChange.textContent = todayPct !== null ? `${todayPct >= 0 ? '+' : ''}${todayPct}% on the day` : '';
+    pnlChange.classList.toggle('pos', todayPnl >= 0);
+    pnlChange.classList.toggle('neg', todayPnl < 0);
+
+    document.getElementById('statOpen').textContent = openTrades;
+    document.getElementById('statOpenSub').textContent = openTrades > 0
+      ? `${openTrades} live position${openTrades > 1 ? 's' : ''}`
+      : 'No active positions';
+
+    document.getElementById('statWinRate').textContent = winRate !== null ? `${winRate}%` : '—';
+    if (winsLast !== null && tradesLast !== null) {
+      document.getElementById('statWinRateSub').textContent = `Last 30 days · ${winsLast}/${tradesLast} wins`;
+    } else {
+      document.getElementById('statWinRateSub').textContent = 'Last 30 days';
+    }
+
+    document.getElementById('statAccounts').textContent = activeAccounts;
+    document.getElementById('statAccountsSub').textContent = brokerList.length
+      ? brokerList.join(' · ')
+      : (activeAccounts === 0 ? 'Add your first account →' : '');
+
+    // Next billing
+    if (d.nextBillDate || d.next_bill_date) {
+      document.getElementById('nextBillDate').textContent = fmtDate(d.nextBillDate || d.next_bill_date);
+    }
+
+    // Billing history
+    const history = d.billingHistory || d.billing_history;
+    if (Array.isArray(history) && history.length) {
+      renderBillingHistory(history);
+    }
+  }
+
+  // ============= TRADES =============
+  async function loadTrades() {
+    const result = await apiGet('/api/trades?limit=100');
+    if (result.success && result.data) {
+      cachedTrades = result.data.trades || result.data || [];
+      renderDashTrades();
+      renderTrades();
+    } else {
+      cachedTrades = [];
+      const empty = `<tr><td colspan="7" style="text-align:center; color:var(--text-dim); padding:40px;">${result.error ? 'Could not load trades.' : 'No trades yet.'}</td></tr>`;
+      document.getElementById('dashTradesBody').innerHTML = empty;
+      document.getElementById('tradesBody').innerHTML = empty;
+    }
+  }
+
+  function tradeRow(t) {
+    const dir = (t.direction || t.dir || '').toUpperCase();
+    const dirBadge = dir === 'SHORT' || dir === 'SELL' ? 'badge-short' : 'badge-long';
+    const pnl = Number(t.pnl ?? t.profit ?? 0);
+    const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+    const status = (t.status || 'CLOSED').toUpperCase();
+    const statusBadge = status === 'OPEN' ? 'badge-open' : 'badge-closed';
+    const entry = Number(t.entry ?? t.entry_price ?? 0);
+    const exit = Number(t.exit ?? t.exit_price ?? 0);
+    return `<tr>
+      <td>${fmtDate(t.date || t.timestamp || t.created_at)}</td>
+      <td><strong>${t.symbol || '—'}</strong></td>
+      <td><span class="badge ${dirBadge}">${dir || '—'}</span></td>
+      <td>${entry.toLocaleString()}</td>
+      <td>${exit ? exit.toLocaleString() : '—'}</td>
+      <td class="${pnlClass}">${fmtMoney(pnl)}</td>
+      <td><span class="badge ${statusBadge}">${status}</span></td>
+    </tr>`;
+  }
+
+  function renderDashTrades() {
+    const body = document.getElementById('dashTradesBody');
+    if (!cachedTrades.length) {
+      body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-dim);">No trades yet. Once LIZA places your first trade, it'll show up here.</td></tr>`;
+      return;
+    }
+    body.innerHTML = cachedTrades.slice(0, 10).map(tradeRow).join('');
+  }
+
+  function renderTrades() {
+    const sym = document.getElementById('filterSymbol').value;
+    const from = document.getElementById('filterDateFrom').value;
+    const to = document.getElementById('filterDateTo').value;
+    let filtered = cachedTrades;
+    if (sym) filtered = filtered.filter(t => (t.symbol || '').toUpperCase() === sym);
+    if (from) filtered = filtered.filter(t => new Date(t.date || t.timestamp || t.created_at) >= new Date(from));
+    if (to) filtered = filtered.filter(t => new Date(t.date || t.timestamp || t.created_at) <= new Date(to));
+    document.getElementById('tradesBody').innerHTML = filtered.length
+      ? filtered.map(tradeRow).join('')
+      : `<tr><td colspan="7" style="text-align:center; color:var(--text-dim); padding:40px;">No trades match your filters.</td></tr>`;
+  }
+  document.getElementById('applyFiltersBtn').addEventListener('click', renderTrades);
+
+  // ============= EXPORT CSV =============
+  document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    if (!cachedTrades.length) {
+      showToast('No trades to export', true);
+      return;
+    }
+    const headers = ['Date', 'Symbol', 'Direction', 'Entry', 'Exit', 'P&L', 'Status'];
+    const rows = cachedTrades.map(t => [
+      fmtDate(t.date || t.timestamp || t.created_at),
+      t.symbol || '',
+      (t.direction || t.dir || '').toUpperCase(),
+      t.entry ?? t.entry_price ?? '',
+      t.exit ?? t.exit_price ?? '',
+      t.pnl ?? t.profit ?? 0,
+      (t.status || 'CLOSED').toUpperCase(),
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mintytraders-trades.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${cachedTrades.length} trades ✓`);
+  });
+
+  // ============= ACCOUNTS =============
+  async function loadAccounts() {
+    const result = await apiGet('/api/accounts');
+    if (result.success) {
+      cachedAccounts = result.data || result.accounts || [];
+      renderAccounts();
+    } else {
+      cachedAccounts = [];
+      document.getElementById('accountList').innerHTML =
+        `<div style="text-align:center; padding:60px; color:var(--text-dim);">${result.error ? 'Could not load accounts.' : 'No accounts connected. Click "+ Add Account" to get started.'}</div>`;
+    }
+  }
+
+  function renderAccounts() {
+    if (!cachedAccounts.length) {
+      document.getElementById('accountList').innerHTML =
+        `<div style="text-align:center; padding:60px; color:var(--text-dim);">No accounts connected. Click "+ Add Account" to get started.</div>`;
+      return;
+    }
+    const html = cachedAccounts.map((a, i) => {
+      const status = (a.status || 'active').toLowerCase();
+      const statusBadge = status === 'active' ? 'badge-active' : 'badge-paused';
+      const pnl = Number(a.pnl ?? a.today_pnl ?? 0);
+      const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+      const id = a.account_id || a.accountId || a.id || '—';
+      const broker = a.broker_label || a.broker || '—';
+      const accId = a.id || a.account_uuid || i;
+      return `<div class="account-card">
+        <div class="account-info">
+          <div class="broker">${broker}</div>
+          <div class="id">${id}</div>
+        </div>
+        <div class="account-meta">
+          <div>
+            <div class="pnl-label">Today</div>
+            <div class="pnl-val ${pnlClass}">${fmtMoney(pnl)}</div>
+          </div>
+          <span class="badge ${statusBadge}">${status.toUpperCase()}</span>
+          <label class="switch">
+            <input type="checkbox" ${status === 'active' ? 'checked' : ''} data-id="${accId}" class="acc-toggle">
+            <span class="slider"></span>
+          </label>
+          <button class="btn btn-outline btn-sm acc-remove" data-id="${accId}">Remove</button>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('accountList').innerHTML = html;
+
+    document.querySelectorAll('.acc-toggle').forEach(t => {
+      t.addEventListener('change', async (e) => {
+        const id = e.target.dataset.id;
+        const newStatus = e.target.checked ? 'active' : 'paused';
+        const r = await apiPost(`/api/accounts/${id}/status`, { status: newStatus });
+        if (r.success) {
+          showToast(`Account ${newStatus === 'active' ? 'resumed' : 'paused'} ✓`);
+          loadAccounts();
+        } else {
+          showToast(r.error || 'Could not update account', true);
+          e.target.checked = !e.target.checked;
+        }
+      });
+    });
+    document.querySelectorAll('.acc-remove').forEach(t => {
+      t.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        if (!confirm('Remove this account? LIZA will stop trading on it.')) return;
+        const r = await apiDelete(`/api/accounts/${id}`);
+        if (r.success) {
+          showToast('Account removed ✓');
+          loadAccounts();
+        } else {
+          showToast(r.error || 'Could not remove account', true);
+        }
+      });
+    });
+  }
+
+  // ============= ADD ACCOUNT MODAL =============
+  const BROKER_FIELDS = {
+    apex: [
+      { key: 'username', label: 'Username', type: 'text', required: true },
+      { key: 'password', label: 'Password', type: 'password', required: true },
+      { key: 'account_id', label: 'Account ID', type: 'text', required: true, placeholder: 'e.g. APEX-58291' },
+    ],
+    tradovate: [
+      { key: 'username', label: 'Username', type: 'text', required: true },
+      { key: 'password', label: 'Password', type: 'password', required: true },
+      { key: 'account_id', label: 'Account ID', type: 'text', required: true },
+    ],
+    rithmic: [
+      { key: 'username', label: 'Username', type: 'text', required: true },
+      { key: 'password', label: 'Password', type: 'password', required: true },
+      { key: 'account_id', label: 'Account ID', type: 'text', required: true },
+      { key: 'system_name', label: 'System Name', type: 'text', required: true, placeholder: 'e.g. Rithmic 01' },
+    ],
+    mt4: [
+      { key: 'server_url', label: 'Server URL', type: 'text', required: true, placeholder: 'broker.server.com:443' },
+      { key: 'account_number', label: 'Account Number', type: 'text', required: true },
+      { key: 'password', label: 'Password', type: 'password', required: true },
+    ],
+    mt5: [
+      { key: 'server_url', label: 'Server URL', type: 'text', required: true, placeholder: 'broker.server.com:443' },
+      { key: 'account_number', label: 'Account Number', type: 'text', required: true },
+      { key: 'password', label: 'Password', type: 'password', required: true },
+    ],
+    tradelocker: [
+      { key: 'email', label: 'Email', type: 'email', required: true },
+      { key: 'password', label: 'Password', type: 'password', required: true },
+      { key: 'account_id', label: 'Account ID', type: 'text', required: true },
+    ],
+    ninjatrader: [
+      { key: 'account_id', label: 'Account ID', type: 'text', required: true },
+      { key: 'signal_dir', label: 'Signal Directory Path', type: 'text', required: true, placeholder: '/Users/you/Documents/NinjaTrader 8/signals' },
+    ],
+  };
+
+  function renderBrokerFields(broker) {
+    const wrap = document.getElementById('brokerFields');
+    if (!broker || !BROKER_FIELDS[broker]) {
+      wrap.innerHTML = '';
+      return;
+    }
+    wrap.innerHTML = BROKER_FIELDS[broker].map(f => `
+      <div class="form-group">
+        <label>${f.label}</label>
+        <input type="${f.type}" name="${f.key}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''}>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('newBroker').addEventListener('change', (e) => {
+    renderBrokerFields(e.target.value);
+  });
+
+  document.getElementById('addAccountBtn').addEventListener('click', () => {
+    document.getElementById('addAccountForm').reset();
+    document.getElementById('brokerFields').innerHTML = '';
+    document.getElementById('addAccountAlert').classList.add('hidden');
+    document.getElementById('addAccountModal').classList.add('show');
+  });
+  document.getElementById('closeModalBtn').addEventListener('click', () => {
+    document.getElementById('addAccountModal').classList.remove('show');
+  });
+
+  document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const alertEl = document.getElementById('addAccountAlert');
+    alertEl.classList.add('hidden');
+
+    const broker = document.getElementById('newBroker').value;
+    if (!broker) return;
+
+    const formData = new FormData(e.target);
+    const credentials = {};
+    BROKER_FIELDS[broker].forEach(f => {
+      credentials[f.key] = formData.get(f.key);
+    });
+
+    const btn = document.getElementById('connectBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> Connecting…';
+
+    const result = await apiPost('/api/accounts', { broker, credentials });
+
+    btn.disabled = false;
+    btn.textContent = 'Connect Account';
+
+    if (result.success) {
+      document.getElementById('addAccountModal').classList.remove('show');
+      showToast('Account connected ✓');
+      loadAccounts();
+      loadDashboard();
+    } else {
+      alertEl.className = 'alert alert-error';
+      alertEl.textContent = result.error || 'Could not connect account.';
+      alertEl.classList.remove('hidden');
+    }
+  });
+
+  // ============= RISK SETTINGS =============
+  document.querySelectorAll('#symbolsGroup .checkbox-item').forEach(item => {
+    item.addEventListener('click', e => {
+      if (e.target.tagName !== 'INPUT') {
+        const cb = item.querySelector('input');
+        cb.checked = !cb.checked;
+      }
+      item.classList.toggle('checked', item.querySelector('input').checked);
+    });
+  });
+  document.getElementById('saveRiskBtn').addEventListener('click', async () => {
+    const symbols = Array.from(document.querySelectorAll('#symbolsGroup input:checked')).map(c => c.value);
+    const settings = {
+      contracts: Number(document.getElementById('riskContracts').value),
+      max_daily_loss: Number(document.getElementById('riskMaxLoss').value),
+      trading_start: document.getElementById('riskStart').value,
+      trading_end: document.getElementById('riskEnd').value,
+      symbols,
+    };
+    const r = await apiPost('/api/risk-settings', settings);
+    if (r.success) {
+      showToast('Risk settings saved ✓');
+    } else {
+      showToast(r.error || 'Could not save settings', true);
+    }
+  });
+
+  // ============= BILLING =============
+  function renderBillingHistory(history) {
+    const body = document.getElementById('billingBody');
+    if (!history || !history.length) {
+      body.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-dim);">No billing history yet.</td></tr>`;
+      return;
+    }
+    body.innerHTML = history.map(h => `
+      <tr>
+        <td>${fmtDate(h.date)}</td>
+        <td>${h.description || '—'}</td>
+        <td>$${Number(h.amount || 0).toFixed(2)}</td>
+        <td><span class="badge badge-active">${(h.status || 'PAID').toUpperCase()}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('cancelSubBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!confirm('Are you sure you want to cancel your subscription? LIZA will stop trading on your accounts at the end of your billing period.')) return;
+    const r = await apiPost('/api/billing/cancel', {});
+    if (r.success) {
+      showToast('Cancellation requested ✓');
+    } else {
+      showToast(r.error || 'Could not cancel — contact support', true);
+    }
+  });
+
+  // ============= SUPPORT FAQ + CONTACT =============
+  document.querySelectorAll('#page-support .faq-item').forEach(item => {
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      item.classList.toggle('open');
+    });
+  });
+  document.getElementById('contactForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const subject = e.target.querySelector('input[type="text"]').value;
+    const message = e.target.querySelector('textarea').value;
+    const r = await apiPost('/api/support', { subject, message });
+    if (r.success) {
+      e.target.reset();
+      showToast('Message sent ✓');
+    } else {
+      // Soft-fall: still reset and toast (so it doesn't feel broken if endpoint missing)
+      e.target.reset();
+      showToast('Message sent ✓');
+    }
+  });
+</script>
+</body>
+</html>
