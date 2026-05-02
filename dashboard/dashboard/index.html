@@ -1004,8 +1004,10 @@
 <!-- Add Account Modal -->
 <div class="modal-overlay" id="addAccountModal">
   <div class="modal">
-    <h3>Connect a Broker Account</h3>
+    <h3 id="addAccountTitle">Connect a Broker Account</h3>
     <div id="addAccountAlert" class="alert hidden"></div>
+
+    <!-- Step 1: enter credentials -->
     <form id="addAccountForm">
       <div class="form-group">
         <label>Broker</label>
@@ -1021,14 +1023,26 @@
         </select>
       </div>
 
-      <!-- Dynamic broker fields -->
+      <!-- Dynamic broker fields (credentials only when auto-discover supported) -->
       <div id="brokerFields"></div>
 
       <div class="modal-actions">
         <button type="button" class="btn btn-outline" id="closeModalBtn">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="connectBtn">Connect Account</button>
+        <button type="submit" class="btn btn-primary" id="connectBtn">🔍 Fetch My Accounts</button>
       </div>
     </form>
+
+    <!-- Step 2: pick which accounts to enable (hidden until discovery) -->
+    <div id="discoverStep" class="hidden">
+      <p style="margin: 0 0 12px; color: var(--text-dim); font-size: 14px;">
+        Select the accounts you'd like to connect. Your credentials are encrypted and shared across all selected accounts.
+      </p>
+      <div id="discoveredAccounts" style="max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 8px;"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="backToCredsBtn">← Back</button>
+        <button type="button" class="btn btn-primary" id="connectSelectedBtn">Connect Selected Accounts →</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1529,21 +1543,25 @@
   }
 
   // ============= ADD ACCOUNT MODAL =============
+  // Brokers split into two camps:
+  //   - AUTO_DISCOVER: user enters credentials only → we fetch the account list
+  //   - MANUAL_ONLY: user enters everything by hand (no list API available)
+  const AUTO_DISCOVER_BROKERS = new Set(['apex', 'tradovate', 'rithmic']);
+
+  // Fields shown in step 1 (credentials). For AUTO_DISCOVER brokers we omit
+  // account_id — the user picks it from the list in step 2.
   const BROKER_FIELDS = {
     apex: [
       { key: 'username', label: 'Username', type: 'text', required: true },
       { key: 'password', label: 'Password', type: 'password', required: true },
-      { key: 'account_id', label: 'Account ID', type: 'text', required: true, placeholder: 'e.g. APEX-58291' },
     ],
     tradovate: [
       { key: 'username', label: 'Username', type: 'text', required: true },
       { key: 'password', label: 'Password', type: 'password', required: true },
-      { key: 'account_id', label: 'Account ID', type: 'text', required: true },
     ],
     rithmic: [
       { key: 'username', label: 'Username', type: 'text', required: true },
       { key: 'password', label: 'Password', type: 'password', required: true },
-      { key: 'account_id', label: 'Account ID', type: 'text', required: true },
       { key: 'system_name', label: 'System Name', type: 'text', required: true, placeholder: 'e.g. Rithmic 01' },
     ],
     mt4: [
@@ -1567,6 +1585,12 @@
     ],
   };
 
+  // In-memory cache of the credentials the user entered + the discovered
+  // accounts list. Cleared on cancel / success.
+  let pendingCredentials = null;
+  let pendingBroker = null;
+  let discoveredAccounts = [];
+
   function renderBrokerFields(broker) {
     const wrap = document.getElementById('brokerFields');
     if (!broker || !BROKER_FIELDS[broker]) {
@@ -1579,6 +1603,49 @@
         <input type="${f.type}" name="${f.key}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''}>
       </div>
     `).join('');
+
+    // Update the submit button label based on what step 1 actually does.
+    const btn = document.getElementById('connectBtn');
+    btn.textContent = AUTO_DISCOVER_BROKERS.has(broker) ? '🔍 Fetch My Accounts' : 'Connect Account';
+  }
+
+  function showStep1() {
+    document.getElementById('addAccountForm').classList.remove('hidden');
+    document.getElementById('discoverStep').classList.add('hidden');
+    document.getElementById('addAccountTitle').textContent = 'Connect a Broker Account';
+  }
+  function showStep2() {
+    document.getElementById('addAccountForm').classList.add('hidden');
+    document.getElementById('discoverStep').classList.remove('hidden');
+    document.getElementById('addAccountTitle').textContent = 'Select Accounts to Connect';
+  }
+
+  function fmtBalance(b) {
+    if (b == null) return '';
+    const num = Number(b);
+    if (!Number.isFinite(num)) return String(b);
+    return num.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  }
+
+  function renderDiscoveredAccounts(accounts, message) {
+    const wrap = document.getElementById('discoveredAccounts');
+    if (!accounts || accounts.length === 0) {
+      wrap.innerHTML = `
+        <div style="padding: 16px; text-align: center; color: var(--text-dim); font-size: 14px;">
+          ${message || 'No accounts found for these credentials.'}
+        </div>`;
+      return;
+    }
+    wrap.innerHTML = accounts.map(a => {
+      const label = a.nickname ? `${a.name} (${a.nickname})` : a.name;
+      const bal = a.balance != null ? ` — Balance: ${fmtBalance(a.balance)}` : '';
+      const status = a.active ? '<span style="color: var(--success, #2e7d32);">✅ Active</span>' : '<span style="color: var(--text-dim);">Inactive</span>';
+      return `
+        <label style="display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid var(--border); cursor:pointer;">
+          <input type="checkbox" class="discovered-acct" value="${a.id}" ${a.active ? 'checked' : ''}>
+          <span style="flex:1;"><strong>${label}</strong>${bal} ${status}</span>
+        </label>`;
+    }).join('');
   }
 
   document.getElementById('newBroker').addEventListener('change', (e) => {
@@ -1589,10 +1656,19 @@
     document.getElementById('addAccountForm').reset();
     document.getElementById('brokerFields').innerHTML = '';
     document.getElementById('addAccountAlert').classList.add('hidden');
+    pendingCredentials = null;
+    pendingBroker = null;
+    discoveredAccounts = [];
+    showStep1();
+    document.getElementById('connectBtn').textContent = 'Connect Account';
     document.getElementById('addAccountModal').classList.add('show');
   });
   document.getElementById('closeModalBtn').addEventListener('click', () => {
     document.getElementById('addAccountModal').classList.remove('show');
+  });
+  document.getElementById('backToCredsBtn').addEventListener('click', () => {
+    showStep1();
+    document.getElementById('addAccountAlert').classList.add('hidden');
   });
 
   document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
@@ -1611,12 +1687,36 @@
 
     const btn = document.getElementById('connectBtn');
     btn.disabled = true;
+    const originalLabel = btn.textContent;
+
+    if (AUTO_DISCOVER_BROKERS.has(broker)) {
+      // Step 1 → discover accounts, then move to step 2.
+      btn.innerHTML = '<span class="loader"></span> Fetching accounts…';
+      const result = await apiPost('/api/accounts/discover', { broker, credentials });
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+
+      if (!result.success) {
+        alertEl.className = 'alert alert-error';
+        alertEl.textContent = result.error || 'Could not fetch accounts. Check your credentials.';
+        alertEl.classList.remove('hidden');
+        return;
+      }
+
+      pendingBroker = broker;
+      pendingCredentials = credentials;
+      discoveredAccounts = (result.data && result.data.accounts) || [];
+      const message = result.data && result.data.message;
+      renderDiscoveredAccounts(discoveredAccounts, message);
+      showStep2();
+      return;
+    }
+
+    // Manual-only broker — single insert, old flow.
     btn.innerHTML = '<span class="loader"></span> Connecting…';
-
     const result = await apiPost('/api/accounts', { broker, credentials });
-
     btn.disabled = false;
-    btn.textContent = 'Connect Account';
+    btn.textContent = originalLabel;
 
     if (result.success) {
       document.getElementById('addAccountModal').classList.remove('show');
@@ -1626,6 +1726,50 @@
     } else {
       alertEl.className = 'alert alert-error';
       alertEl.textContent = result.error || 'Could not connect account.';
+      alertEl.classList.remove('hidden');
+    }
+  });
+
+  document.getElementById('connectSelectedBtn').addEventListener('click', async () => {
+    const alertEl = document.getElementById('addAccountAlert');
+    alertEl.classList.add('hidden');
+
+    const checked = Array.from(document.querySelectorAll('#discoveredAccounts input.discovered-acct:checked'))
+      .map(cb => cb.value);
+
+    if (checked.length === 0) {
+      alertEl.className = 'alert alert-error';
+      alertEl.textContent = 'Select at least one account to connect.';
+      alertEl.classList.remove('hidden');
+      return;
+    }
+
+    const btn = document.getElementById('connectSelectedBtn');
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.innerHTML = '<span class="loader"></span> Connecting…';
+
+    const result = await apiPost('/api/accounts', {
+      broker: pendingBroker,
+      credentials: pendingCredentials,
+      accounts: checked,
+    });
+
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+
+    if (result.success) {
+      document.getElementById('addAccountModal').classList.remove('show');
+      const n = (result.data && (result.data.count || (result.data.accounts || []).length)) || checked.length;
+      showToast(`${n} account${n === 1 ? '' : 's'} connected ✓`);
+      pendingCredentials = null;
+      pendingBroker = null;
+      discoveredAccounts = [];
+      loadAccounts();
+      loadDashboard();
+    } else {
+      alertEl.className = 'alert alert-error';
+      alertEl.textContent = result.error || 'Could not connect accounts.';
       alertEl.classList.remove('hidden');
     }
   });
