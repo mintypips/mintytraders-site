@@ -1026,7 +1026,20 @@
       <!-- Dynamic broker fields (credentials only when auto-discover supported) -->
       <div id="brokerFields"></div>
 
-      <div class="modal-actions">
+      <!-- OAuth section: shown for Tradovate/Apex when server has OAuth configured -->
+      <div id="tradovateOAuthSection" class="hidden" style="margin-top:12px;">
+        <p style="color:var(--text-dim);margin:0 0 14px;font-size:14px;line-height:1.5;">
+          Connect securely via Tradovate — you'll be redirected to log in with your Tradovate or Google account. No password is shared with MintyTraders.
+        </p>
+        <button type="button" id="tradovateOAuthBtn" class="btn btn-primary" style="width:100%;">
+          🔐 Connect via Tradovate →
+        </button>
+        <p style="color:var(--text-dim);margin:14px 0 0;font-size:12px;text-align:center;">
+          <a href="#" id="useLegacyTradovateBtn" style="color:var(--text-dim);text-decoration:underline;">Use username &amp; password instead</a>
+        </p>
+      </div>
+
+      <div class="modal-actions" id="credentialsActions">
         <button type="button" class="btn btn-outline" id="closeModalBtn">Cancel</button>
         <button type="submit" class="btn btn-primary" id="connectBtn">🔍 Fetch My Accounts</button>
       </div>
@@ -1590,11 +1603,51 @@
   let pendingCredentials = null;
   let pendingBroker = null;
   let discoveredAccounts = [];
+  // OAuth-specific state — set when the user came back from Tradovate's
+  // hosted login. When non-null, connectSelectedBtn uses the OAuth /connect
+  // endpoint instead of /api/accounts.
+  let pendingTokenHandle = null;
+  // Cache of the /api/oauth/tradovate/status response (configured: bool).
+  let tradovateOAuthStatus = null;
+  // When true, the user explicitly chose to use legacy username/password
+  // for Tradovate even though OAuth is available. Resets when modal reopens.
+  let useLegacyTradovate = false;
 
-  function renderBrokerFields(broker) {
+  function isTradovateBroker(broker) {
+    return broker === 'tradovate' || broker === 'apex';
+  }
+
+  async function ensureTradovateOAuthStatus() {
+    if (tradovateOAuthStatus !== null) return tradovateOAuthStatus;
+    try {
+      const res = await apiGet('/api/oauth/tradovate/status');
+      tradovateOAuthStatus = (res && res.success && res.data) ? res.data : { configured: false };
+    } catch {
+      tradovateOAuthStatus = { configured: false };
+    }
+    return tradovateOAuthStatus;
+  }
+
+  function showOAuthSection(show) {
+    const oauthSec = document.getElementById('tradovateOAuthSection');
+    const credActs = document.getElementById('credentialsActions');
+    const fields = document.getElementById('brokerFields');
+    if (show) {
+      oauthSec.classList.remove('hidden');
+      credActs.classList.add('hidden');
+      fields.classList.add('hidden');
+    } else {
+      oauthSec.classList.add('hidden');
+      credActs.classList.remove('hidden');
+      fields.classList.remove('hidden');
+    }
+  }
+
+  async function renderBrokerFields(broker) {
     const wrap = document.getElementById('brokerFields');
     if (!broker || !BROKER_FIELDS[broker]) {
       wrap.innerHTML = '';
+      showOAuthSection(false);
       return;
     }
     wrap.innerHTML = BROKER_FIELDS[broker].map(f => `
@@ -1607,6 +1660,15 @@
     // Update the submit button label based on what step 1 actually does.
     const btn = document.getElementById('connectBtn');
     btn.textContent = AUTO_DISCOVER_BROKERS.has(broker) ? '🔍 Fetch My Accounts' : 'Connect Account';
+
+    // For Tradovate/Apex, prefer OAuth when the server has it configured
+    // (unless the user opted into the legacy username/password path).
+    if (isTradovateBroker(broker) && !useLegacyTradovate) {
+      const status = await ensureTradovateOAuthStatus();
+      showOAuthSection(!!(status && status.configured));
+    } else {
+      showOAuthSection(false);
+    }
   }
 
   function showStep1() {
@@ -1649,19 +1711,52 @@
   }
 
   document.getElementById('newBroker').addEventListener('change', (e) => {
+    useLegacyTradovate = false;
     renderBrokerFields(e.target.value);
   });
 
-  document.getElementById('addAccountBtn').addEventListener('click', () => {
+  function resetAddAccountModal() {
     document.getElementById('addAccountForm').reset();
     document.getElementById('brokerFields').innerHTML = '';
     document.getElementById('addAccountAlert').classList.add('hidden');
     pendingCredentials = null;
     pendingBroker = null;
+    pendingTokenHandle = null;
+    useLegacyTradovate = false;
     discoveredAccounts = [];
+    showOAuthSection(false);
+  }
+
+  document.getElementById('addAccountBtn').addEventListener('click', () => {
+    resetAddAccountModal();
     showStep1();
     document.getElementById('connectBtn').textContent = 'Connect Account';
     document.getElementById('addAccountModal').classList.add('show');
+  });
+
+  // "Connect via Tradovate" — top-level navigation to the backend OAuth start.
+  // We pass the user's Supabase JWT in the query so the backend can verify
+  // them without needing an Authorization header (browsers don't send headers
+  // on full-page navigations).
+  document.getElementById('tradovateOAuthBtn').addEventListener('click', async () => {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session?.access_token) {
+        showToast('Please log in again before connecting Tradovate.', true);
+        return;
+      }
+      const url = `${API}/api/oauth/tradovate/start?auth=${encodeURIComponent(session.access_token)}`;
+      window.location.href = url;
+    } catch (err) {
+      showToast(err.message || 'Could not start Tradovate OAuth.', true);
+    }
+  });
+
+  // Fallback link: let the user opt into the legacy username/password form.
+  document.getElementById('useLegacyTradovateBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    useLegacyTradovate = true;
+    renderBrokerFields(document.getElementById('newBroker').value);
   });
   document.getElementById('closeModalBtn').addEventListener('click', () => {
     document.getElementById('addAccountModal').classList.remove('show');
@@ -1749,11 +1844,22 @@
     const originalLabel = btn.textContent;
     btn.innerHTML = '<span class="loader"></span> Connecting…';
 
-    const result = await apiPost('/api/accounts', {
-      broker: pendingBroker,
-      credentials: pendingCredentials,
-      accounts: checked,
-    });
+    let result;
+    if (pendingTokenHandle) {
+      // OAuth path — the token is already on the server side, identified by
+      // an encrypted handle we got from the callback redirect.
+      result = await apiPost('/api/oauth/tradovate/connect', {
+        token_handle: pendingTokenHandle,
+        account_ids: checked,
+      });
+    } else {
+      // Legacy username/password path.
+      result = await apiPost('/api/accounts', {
+        broker: pendingBroker,
+        credentials: pendingCredentials,
+        accounts: checked,
+      });
+    }
 
     btn.disabled = false;
     btn.textContent = originalLabel;
@@ -1764,6 +1870,7 @@
       showToast(`${n} account${n === 1 ? '' : 's'} connected ✓`);
       pendingCredentials = null;
       pendingBroker = null;
+      pendingTokenHandle = null;
       discoveredAccounts = [];
       loadAccounts();
       loadDashboard();
@@ -1773,6 +1880,73 @@
       alertEl.classList.remove('hidden');
     }
   });
+
+  // ============= OAUTH RETURN HANDLER =============
+  // When the OAuth flow completes, the backend (or the /oauth/callback page)
+  // redirects the user back here with ?oauth=success&token_handle=...&accounts=...
+  // We pop open the Add Account modal directly into Step 2 (account picker)
+  // so the user can immediately choose which accounts to enable.
+  function handleOAuthReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('oauth');
+    if (!status) return;
+
+    // Clean the URL so a refresh doesn't re-trigger the modal.
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, '', cleanUrl);
+
+    if (status === 'error') {
+      const msg = params.get('message') || 'Tradovate connection failed.';
+      showToast(msg, true);
+      return;
+    }
+
+    if (status !== 'success') return;
+
+    const broker = params.get('broker') || 'tradovate';
+    const tokenHandle = params.get('token_handle');
+    let accounts = [];
+    try {
+      accounts = JSON.parse(params.get('accounts') || '[]');
+    } catch {
+      accounts = [];
+    }
+
+    if (!tokenHandle) {
+      showToast('Tradovate connection completed, but the token handle is missing. Try again.', true);
+      return;
+    }
+
+    resetAddAccountModal();
+    pendingTokenHandle = tokenHandle;
+    pendingBroker = broker === 'tradovate' ? 'tradovate' : 'apex';
+    discoveredAccounts = accounts;
+
+    renderDiscoveredAccounts(accounts, accounts.length === 0
+      ? 'Connected to Tradovate, but no accounts were found on this login.'
+      : null);
+    showStep2();
+    document.getElementById('addAccountModal').classList.add('show');
+    showToast('Tradovate connected — pick which accounts to enable.');
+  }
+
+  // Run after the dashboard finishes booting (currentUser is set) so the
+  // modal lands on top of a populated UI rather than the boot loader.
+  // We wait for the next auth state change or do it after a short delay if
+  // the user is already signed in.
+  (function setupOAuthReturn() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get('oauth')) return;
+    const tryRun = () => {
+      if (currentUser) {
+        handleOAuthReturn();
+      } else {
+        // Try again shortly — onAuthStateChange will fire once Supabase rehydrates.
+        setTimeout(tryRun, 250);
+      }
+    };
+    setTimeout(tryRun, 400);
+  })();
 
   // ============= RISK SETTINGS =============
   document.querySelectorAll('#symbolsGroup .checkbox-item').forEach(item => {

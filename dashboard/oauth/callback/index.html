@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Connecting Tradovate… — MintyTraders</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --fg: #e6e7eb;
+      --dim: #9aa0a6;
+      --accent: #6ee7b7;
+      --error: #f87171;
+      --border: #1f2329;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 480px;
+      width: 100%;
+      background: #11161c;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+    }
+    h1 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }
+    p { color: var(--dim); margin: 8px 0; line-height: 1.5; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 16px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error { color: var(--error); }
+    .btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 18px;
+      background: var(--accent);
+      color: #0b0d10;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { opacity: 0.92; }
+    code {
+      background: #0b0d10;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--dim);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="loadingState">
+      <div class="spinner"></div>
+      <h1>Connecting Tradovate…</h1>
+      <p>Hang tight — we're finishing up the connection.</p>
+    </div>
+
+    <div id="errorState" style="display:none;">
+      <h1 class="error">Connection failed</h1>
+      <p id="errorMessage" class="error"></p>
+      <a class="btn" href="/dashboard/">← Back to dashboard</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>
+    (async function () {
+      const SUPABASE_URL = 'https://mvsydmzfeklmtoymptmi.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c3lkbXpmZWtsbXRveW1wdG1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzAxNzcsImV4cCI6MjA5MzMwNjE3N30.zGKFZabAFl-NgVhE_8Q0Z2sT8KNk_hMeBRgh_Hg4Pkw';
+      const API = 'https://mintytraders-backend-production.up.railway.app';
+
+      function showError(msg) {
+        document.getElementById('loadingState').style.display = 'none';
+        const errEl = document.getElementById('errorState');
+        document.getElementById('errorMessage').textContent = msg;
+        errEl.style.display = 'block';
+      }
+
+      function bounceToDashboard(params) {
+        const url = new URL('/dashboard/', window.location.origin);
+        for (const [k, v] of Object.entries(params)) {
+          if (v != null) url.searchParams.set(k, String(v));
+        }
+        window.location.replace(url.toString());
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const oauthErr = params.get('error');
+      const errDesc = params.get('error_description');
+
+      if (oauthErr) {
+        bounceToDashboard({ oauth: 'error', message: errDesc || oauthErr });
+        return;
+      }
+      if (!code) {
+        showError('No authorization code received from Tradovate.');
+        return;
+      }
+
+      // We need an authenticated session to call the backend. If the user
+      // somehow lost their session during the OAuth round-trip, send them
+      // back to the dashboard to re-login.
+      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session?.access_token) {
+        bounceToDashboard({
+          oauth: 'error',
+          message: 'Your session expired during the connection. Please log in and try again.'
+        });
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/api/oauth/tradovate/exchange`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ code })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          bounceToDashboard({
+            oauth: 'error',
+            message: (json && (json.error || json.message)) || `Token exchange failed (HTTP ${res.status})`
+          });
+          return;
+        }
+
+        const { token_handle, accounts } = json.data || {};
+        bounceToDashboard({
+          oauth: 'success',
+          broker: 'tradovate',
+          token_handle,
+          accounts: JSON.stringify(accounts || [])
+        });
+      } catch (err) {
+        bounceToDashboard({
+          oauth: 'error',
+          message: err.message || 'Network error during token exchange.'
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
