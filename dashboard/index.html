@@ -410,6 +410,7 @@
   .badge-paused { background: rgba(255, 191, 0, 0.15); color: #ffbf00; }
   .badge-closed { background: rgba(144, 144, 168, 0.15); color: var(--text-dim); }
   .badge-open { background: rgba(0, 212, 255, 0.15); color: var(--cyan); }
+  .badge-failed { background: rgba(255, 91, 91, 0.15); color: var(--red); }
 
   /* Account cards */
   .account-list { display: flex; flex-direction: column; gap: 12px; }
@@ -486,6 +487,103 @@
     margin-top: 24px;
   }
   .modal-actions .btn { flex: 1; }
+
+  /* Broker picker cards (Add Account modal step 0) */
+  .broker-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .broker-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    width: 100%;
+  }
+  .broker-card:hover {
+    border-color: var(--mint);
+    background: rgba(0, 212, 100, 0.04);
+  }
+  .broker-card.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .broker-card.disabled:hover {
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .broker-card .bc-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(0, 212, 100, 0.1);
+    color: var(--mint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .broker-card .bc-body { flex: 1; }
+  .broker-card .bc-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .broker-card .bc-tag {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--mint);
+    background: rgba(0, 212, 100, 0.12);
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .broker-card .bc-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.45;
+  }
+
+  /* PMT helper text under inputs */
+  .field-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    line-height: 1.45;
+  }
+  .test-status {
+    font-size: 13px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .test-status.ok {
+    color: var(--mint);
+    border-color: rgba(0, 212, 100, 0.3);
+    background: rgba(0, 212, 100, 0.06);
+  }
+  .test-status.err {
+    color: var(--red);
+    border-color: rgba(255, 91, 91, 0.3);
+    background: rgba(255, 91, 91, 0.06);
+  }
 
   /* Filters */
   .filter-row {
@@ -695,6 +793,113 @@
     cursor: pointer;
     font-size: 18px;
   }
+
+  /* ============ MOBILE BOTTOM NAV ============ */
+  .bottom-nav {
+    display: none;
+  }
+  @media (max-width: 768px) {
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      background: var(--bg-2);
+      border-top: 1px solid var(--border);
+      z-index: 200;
+      padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .bottom-nav-item {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 4px;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s;
+      min-width: 0;
+    }
+    .bottom-nav-item .bn-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+    .bottom-nav-item .bn-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .bottom-nav-item.active {
+      color: var(--mint);
+    }
+    .bottom-nav-item.admin-nav-item.active {
+      color: #a78bfa;
+    }
+
+    /* Hide hamburger on mobile since we have bottom nav */
+    .mobile-toggle { display: none !important; }
+
+    /* Reserve space so content isn't hidden under bottom nav */
+    .main { padding-bottom: 70px; }
+
+    /* Prevent header text overflow */
+    .page-header { min-width: 0; }
+    .page-header h1 {
+      font-size: 22px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
+    .page-header p {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Table overflow fix — wrap tables in panels with horizontal scroll */
+    .panel {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .panel table {
+      min-width: 540px;
+    }
+  }
+
+  /* ── Strategy Cards ── */
+  .strategy-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  .strategy-card-header { display: flex; align-items: center; gap: 10px; }
+  .strategy-emoji { font-size: 28px; }
+  .strategy-info { flex: 1; }
+  .strategy-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .strategy-badges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+  .badge-symbol { background: rgba(0,212,255,0.12); color: var(--cyan); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-live { background: rgba(0,212,100,0.12); color: var(--mint); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-paper { background: rgba(144,144,168,0.12); color: var(--text-dim); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .strategy-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .strategy-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+  .strategy-stat { font-size: 12px; color: var(--text-dim); }
+  .strategy-stat strong { color: var(--text); font-size: 13px; display: block; margin-bottom: 2px; }
+  .strategy-controls { display: flex; align-items: center; gap: 14px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--bg-3); border-radius: 24px; transition: 0.3s; }
+  .toggle-slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: var(--text-dim); border-radius: 50%; transition: 0.3s; }
+  .toggle-switch input:checked + .toggle-slider { background: var(--mint); }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background: #fff; }
+  .toggle-label { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+  .contracts-input { display: flex; align-items: center; gap: 8px; }
+  .contracts-input label { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+  .contracts-input select { background: var(--bg-3); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 4px 8px; font-size: 13px; width: 70px; }
+
 </style>
 </head>
 <body>
@@ -772,8 +977,10 @@
     <a class="nav-item" data-route="accounts"><span class="nav-icon">🔗</span> My Accounts</a>
     <a class="nav-item" data-route="trades"><span class="nav-icon">📈</span> Trade History</a>
     <a class="nav-item" data-route="risk"><span class="nav-icon">⚙️</span> Risk Settings</a>
+    <a class="nav-item" data-route="strategies"><span class="nav-icon">🤖</span> Strategies</a>
     <a class="nav-item" data-route="billing"><span class="nav-icon">💳</span> Billing</a>
     <a class="nav-item" data-route="support"><span class="nav-icon">💬</span> Support</a>
+    <a class="nav-item admin-nav-item hidden" data-route="admin" id="adminNavItem" style="margin-top:8px;border-top:1px solid rgba(123,47,255,0.3);padding-top:12px;color:#a78bfa;"><span class="nav-icon">🛠️</span> Admin</a>
     <div class="sidebar-bottom">
       <div class="bot-status"><span class="dot"></span> LIZA — ACTIVE</div>
       <div class="user-pill">
@@ -815,6 +1022,11 @@
           <div class="value" id="statAccounts">—</div>
           <div class="change" id="statAccountsSub">Loading…</div>
         </div>
+        <div class="stat-card">
+          <div class="label">Total P&L (30d)</div>
+          <div class="value" id="statTotalPnl">—</div>
+          <div class="change" id="statTotalPnlSub">All time</div>
+        </div>
       </div>
 
       <div class="panel">
@@ -833,6 +1045,22 @@
       </div>
     </div>
 
+    <!-- =============== MANUAL TRADE =============== -->
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin:0 0 24px;" id="manualTradePanel">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px;">⚡ Manual Trade</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <select id="manualSymbol" style="background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:14px;">
+          <option value="ES">ES — S&amp;P 500</option>
+          <option value="NQ">NQ — Nasdaq</option>
+          <option value="YM">YM — Dow</option>
+        </select>
+        <button onclick="manualTrade('LONG')" style="background:rgba(0,212,100,0.15);color:var(--mint);border:1px solid var(--mint);padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">▲ BUY</button>
+        <button onclick="manualTrade('SHORT')" style="background:rgba(255,91,91,0.1);color:var(--red);border:1px solid var(--red);padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">▼ SELL</button>
+        <button onclick="manualFlat()" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid var(--border);padding:9px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">FLAT</button>
+        <span id="manualTradeStatus" style="font-size:13px;color:var(--text-dim);"></span>
+      </div>
+    </div>
+
     <!-- =============== ACCOUNTS =============== -->
     <div class="page hidden" id="page-accounts">
       <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px;">
@@ -840,7 +1068,17 @@
           <h1>My Accounts</h1>
           <p>Manage your connected broker accounts.</p>
         </div>
-        <button class="btn btn-primary" id="addAccountBtn">+ Add Account</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-outline" id="updatePmtBtn">↻ Update PMT Connection</button>
+          <button class="btn btn-primary" id="addAccountBtn">+ Add Account</button>
+        </div>
+      </div>
+      <div style="background:rgba(0,212,100,0.05);border:1px solid rgba(0,212,100,0.2);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--mint);">Need PickMyTrade?</div>
+          <div style="font-size:13px;color:var(--text-dim);margin-top:2px;">PickMyTrade connects LIZA to your broker. Free to start.</div>
+        </div>
+        <a href="https://pickmytrade.trade/?referral=vXUSCT-jOhuSA1Fm5NIqxQ" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="font-size:13px;padding:8px 16px;white-space:nowrap;">Sign up for PMT →</a>
       </div>
       <div class="account-list" id="accountList">
         <div style="text-align:center; padding:60px; color:var(--text-dim);"><span class="loader"></span> Loading accounts…</div>
@@ -922,6 +1160,21 @@
       </div>
     </div>
 
+    <!-- =============== STRATEGIES =============== -->
+    <div class="page hidden" id="page-strategies">
+      <div class="page-header">
+        <h1>Trading Strategies</h1>
+        <p>Choose which bots trade on your behalf. You can run multiple simultaneously.</p>
+      </div>
+      <div id="strategiesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;margin-bottom:24px;">
+        <!-- Cards injected by JS -->
+        <div style="color:var(--text-dim);padding:40px;text-align:center;" id="strategiesLoading">Loading strategies…</div>
+      </div>
+      <button class="btn btn-primary" id="saveStrategiesBtn" style="display:none;">Save Strategies</button>
+      <div id="strategiesSaveMsg" style="margin-top:12px;color:var(--mint);display:none;">✅ Saved!</div>
+    </div>
+
+
     <!-- =============== BILLING =============== -->
     <div class="page hidden" id="page-billing">
       <div class="page-header">
@@ -989,7 +1242,7 @@
       <div class="panel" style="margin-top: 28px;">
         <div class="panel-head"><h2>Frequently Asked</h2></div>
         <div class="panel-body">
-          <div class="faq-item"><div class="faq-q">What broker do I need?</div><div class="faq-a">We support Apex, Tradovate, Rithmic, MT4/MT5, NinjaTrader, and TradeLocker.</div></div>
+          <div class="faq-item"><div class="faq-q">What broker do I need?</div><div class="faq-a">We support all major prop firms and brokers via PickMyTrade, including Rithmic, Tradovate, TradeLocker, MT4/MT5 and more.</div></div>
           <div class="faq-item"><div class="faq-q">Do I need trading experience?</div><div class="faq-a">No. LIZA handles everything automatically.</div></div>
           <div class="faq-item"><div class="faq-q">Is my capital safe?</div><div class="faq-a">Every trade has a hard stop loss. Daily drawdown limits protect your funded account rules.</div></div>
           <div class="faq-item"><div class="faq-q">How long to get set up?</div><div class="faq-a">Most clients are live within 24 hours of signing up.</div></div>
@@ -997,6 +1250,72 @@
         </div>
       </div>
     </div>
+
+
+<!-- ====== ADMIN PAGE ====== -->
+<div class="page hidden" id="page-admin">
+  <div class="page-header">
+    <h1>⚙️ Admin Panel</h1>
+    <p>Manage all clients, accounts, trades, and signal firing.</p>
+  </div>
+
+  <!-- Admin Tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:0;">
+    <button class="admin-tab active" data-atab="clients" style="background:none;border:none;color:var(--text-dim);font-size:14px;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;">👥 Clients</button>
+    <button class="admin-tab" data-atab="all-accounts" style="background:none;border:none;color:var(--text-dim);font-size:14px;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;">🔗 Accounts</button>
+    <button class="admin-tab" data-atab="all-trades" style="background:none;border:none;color:var(--text-dim);font-size:14px;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;">📈 Trades</button>
+    <button class="admin-tab" data-atab="signal-fire" style="background:none;border:none;color:var(--text-dim);font-size:14px;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;">🔥 Signal Fire</button>
+  </div>
+
+  <!-- Clients Tab -->
+  <div class="admin-panel" id="atab-clients">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="font-size:16px;">All Clients</h3>
+      <button class="btn btn-primary" onclick="openAddClientModal()" style="font-size:13px;padding:8px 16px;">+ Add Client</button>
+    </div>
+    <div id="adminClientsTable"><div style="text-align:center;padding:40px;color:var(--text-dim);"><span class="loader"></span> Loading…</div></div>
+  </div>
+
+  <!-- Accounts Tab -->
+  <div class="admin-panel hidden" id="atab-all-accounts">
+    <h3 style="font-size:16px;margin-bottom:16px;">All Accounts</h3>
+    <div id="adminAccountsTable"><div style="text-align:center;padding:40px;color:var(--text-dim);"><span class="loader"></span> Loading…</div></div>
+  </div>
+
+  <!-- Trades Tab -->
+  <div class="admin-panel hidden" id="atab-all-trades">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="font-size:16px;">All Trades</h3>
+      <div id="adminTotalPnl" style="font-size:18px;font-weight:700;color:var(--mint);">Total PnL: —</div>
+    </div>
+    <div id="adminTradesTable"><div style="text-align:center;padding:40px;color:var(--text-dim);"><span class="loader"></span> Loading…</div></div>
+  </div>
+
+  <!-- Signal Fire Tab -->
+  <div class="admin-panel hidden" id="atab-signal-fire">
+    <h3 style="font-size:16px;margin-bottom:16px;">🔥 Manual Signal Fire</h3>
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:420px;margin-bottom:24px;">
+      <div style="margin-bottom:16px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">Symbol</label>
+        <select id="signalSymbol" style="width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;">
+          <option value="ES">ES — S&amp;P 500</option>
+          <option value="NQ">NQ — Nasdaq</option>
+          <option value="YM">YM — Dow</option>
+        </select>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">Direction</label>
+        <div style="display:flex;gap:8px;">
+          <button class="signal-dir-btn active" data-dir="LONG" onclick="selectSignalDir(this)" style="flex:1;padding:10px;border:1px solid var(--mint);background:rgba(0,212,100,0.1);color:var(--mint);border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">▲ LONG</button>
+          <button class="signal-dir-btn" data-dir="SHORT" onclick="selectSignalDir(this)" style="flex:1;padding:10px;border:1px solid var(--border);background:none;color:var(--text-dim);border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">▼ SHORT</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="fireSignalBtn" onclick="fireSignal()" style="width:100%;padding:12px;font-size:15px;font-weight:700;">🔥 Fire Signal</button>
+    </div>
+    <h4 style="font-size:14px;color:var(--text-dim);margin-bottom:12px;">Recent Signals Fired</h4>
+    <div id="recentSignalsFired" style="display:flex;flex-direction:column;gap:8px;"><div style="color:var(--text-faint);font-size:13px;">No signals fired this session.</div></div>
+  </div>
+</div>
 
   </main>
 </div>
@@ -1007,14 +1326,68 @@
     <h3 id="addAccountTitle">Connect a Broker Account</h3>
     <div id="addAccountAlert" class="alert hidden"></div>
 
-    <!-- Step 1: enter credentials -->
-    <form id="addAccountForm">
+    <!-- Step 0: pick broker type -->
+    <div id="brokerPickerStep">
+      <p style="margin: 0 0 16px; color: var(--text-dim); font-size: 14px; line-height: 1.5;">
+        How would you like to connect your trading account?
+      </p>
+      <div class="broker-cards">
+        <button type="button" class="broker-card" data-broker-pick="pmt">
+          <div class="bc-icon">⚡</div>
+          <div class="bc-body">
+            <div class="bc-title">PickMyTrade (PMT) <span class="bc-tag">Recommended</span></div>
+            <div class="bc-desc">Works with Tradovate, Rithmic, TradeLocker and more. Quick setup in under 3 minutes.</div>
+          </div>
+        </button>
+        <button type="button" class="broker-card disabled" data-broker-pick="other">
+          <div class="bc-icon">💬</div>
+          <div class="bc-body">
+            <div class="bc-title">Other</div>
+            <div class="bc-desc">Need MT4, MT5, NinjaTrader, or another broker? Contact support and we'll get you set up.</div>
+          </div>
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="closePickerBtn" style="flex:1;">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Step 1A: PMT-specific setup form -->
+    <div id="pmtSetupStep" class="hidden">
+      <p style="margin: 0 0 16px; color: var(--text-dim); font-size: 14px; line-height: 1.5;">
+        Enter your PickMyTrade credentials. <a href="https://app.pickmytrade.trade" target="_blank" rel="noopener noreferrer" style="color:var(--mint);">Open PMT →</a> then go to <strong>Generate Alert</strong> tab.
+        <ol style="margin:10px 0 0;padding-left:18px;font-size:13px;color:var(--text-dim);line-height:1.8;">
+          <li>Click <strong style="color:var(--text)">Show</strong> next to your token — copy it</li>
+          <li>Click the <strong style="color:var(--text)">Webhook</strong> button — copy the full URL</li>
+          <li>Paste both below and click <strong style="color:var(--text)">Connect Account</strong></li>
+        </ol>
+      </p>
+      <form id="pmtSetupForm" onsubmit="return false;">
+        <div class="form-group">
+          <label>PMT Token</label>
+          <input type="text" id="pmtToken" name="pmt_token" placeholder="Your PickMyTrade API token" required autocomplete="off" spellcheck="false">
+          <div class="field-hint">The API token from your PickMyTrade account.</div>
+        </div>
+        <div class="form-group">
+          <label>Webhook URL</label>
+          <input type="text" id="pmtWebhookId" name="webhook_url" placeholder="https://api.pickmytrade.trade/v2/add-trade-data-latest?t=14695" required autocomplete="off" spellcheck="false" style="font-size:12px;">
+          <div class="field-hint">Paste the full webhook URL from PMT → Generate Alert → Webhook button.</div>
+        </div>
+        <div id="pmtTestStatus" class="test-status hidden"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="pmtBackBtn" style="flex:1;">← Back</button>
+          <button type="button" class="btn btn-primary" id="pmtSaveBtn" style="flex:1;" onclick="handlePmtSave(event)">Connect Account →</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Step 1B: legacy credentials form (Rithmic + fallbacks) -->
+    <form id="addAccountForm" class="hidden">
       <div class="form-group">
         <label>Broker</label>
         <select id="newBroker" required>
           <option value="">Select your broker...</option>
-          <option value="apex">Tradovate</option>
-          
+          <option value="apex">Tradovate / Apex</option>
           <option value="rithmic">Rithmic</option>
           <option value="mt4">MetaTrader 4</option>
           <option value="mt5">MetaTrader 5</option>
@@ -1040,7 +1413,7 @@
       </div>
 
       <div class="modal-actions" id="credentialsActions">
-        <button type="button" class="btn btn-outline" id="closeModalBtn">Cancel</button>
+        <button type="button" class="btn btn-outline" id="closeModalBtn">← Back</button>
         <button type="submit" class="btn btn-primary" id="connectBtn">🔍 Fetch My Accounts</button>
       </div>
     </form>
@@ -1059,6 +1432,98 @@
   </div>
 </div>
 
+<!-- Add Client Modal -->
+<div class="modal-overlay hidden" id="addClientModal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h3>Add New Client</h3>
+      <button class="modal-close" onclick="closeAddClientModal()">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <div style="margin-bottom:14px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">Email *</label>
+        <input type="email" id="newClientEmail" placeholder="trader@example.com" style="width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">Name</label>
+        <input type="text" id="newClientName" placeholder="John Doe" style="width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;">
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">Plan</label>
+        <select id="newClientPlan" style="width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;">
+          <option value="pro">Pro</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline" onclick="closeAddClientModal()" style="flex:1;">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAddClient()" style="flex:1;">Add Client</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Client Modal -->
+<div class="modal-overlay hidden" id="editClientModal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h3>Edit Client</h3>
+      <button class="modal-close" onclick="closeEditClientModal()">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <input type="hidden" id="editClientId">
+      <div style="margin-bottom:14px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">Plan</label>
+        <select id="editClientPlan" style="width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;">
+          <option value="starter">Starter</option>
+          <option value="pro">Pro</option>
+          <option value="elite">Elite</option>
+        </select>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">Status</label>
+        <select id="editClientStatus" style="width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;">
+          <option value="active">Active</option>
+          <option value="paused">Paused</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline" onclick="closeEditClientModal()" style="flex:1;">Cancel</button>
+        <button class="btn btn-primary" onclick="submitEditClient()" style="flex:1;">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update PMT Connection Modal -->
+<div class="modal-overlay hidden" id="updatePmtModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h3>Update PMT Connection</h3>
+      <button class="modal-close" id="closeUpdatePmtBtn">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <p style="margin:0 0 12px;color:var(--text-dim);font-size:14px;line-height:1.5;">
+        In PickMyTrade, go to <b>Generate Alert</b> → click <b>Copy Signal Code (JSON)</b>. Paste it below to refresh every account in one go.
+      </p>
+      <p style="margin:0 0 14px;color:var(--text-dim);font-size:12px;line-height:1.5;">
+        ⚠️ Importing replaces your existing connected accounts with the ones in this payload.
+      </p>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">PMT Signal Code (JSON)</label>
+        <textarea id="updatePmtPayload" rows="10" autocomplete="off" spellcheck="false"
+          placeholder='{\n  "symbol": "ES1!",\n  "strategy_name": "MonaLiza",\n  "token": "...",\n  "multiple_accounts": [ ... ]\n}'
+          style="width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45;font-family:ui-monospace,Menlo,Consolas,monospace;resize:vertical;"></textarea>
+      </div>
+      <div id="updatePmtResult" style="font-size:13px;line-height:1.5;min-height:18px;margin-bottom:14px;color:var(--text-dim);"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline" id="cancelUpdatePmtBtn" style="flex:1;">Cancel</button>
+        <button class="btn btn-primary" id="submitUpdatePmtBtn" style="flex:1;">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast">Settings saved ✓</div>
 
@@ -1066,6 +1531,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
 <script>
+  // ============= CONSTANTS =============
+  const ONBOARDING_KEY = 'mintytraders_onboarding_complete';
+
   // ============= CONFIG =============
   const SUPABASE_URL = 'https://mvsydmzfeklmtoymptmi.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c3lkbXpmZWtsbXRveW1wdG1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzAxNzcsImV4cCI6MjA5MzMwNjE3N30.zGKFZabAFl-NgVhE_8Q0Z2sT8KNk_hMeBRgh_Hg4Pkw';
@@ -1153,6 +1621,22 @@
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) return { success: false, error: data.error || data.message || ('HTTP ' + res.status), status: res.status };
+      return data;
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  async function apiPatch(path, body) {
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(API + path, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return { success: false, error: data.error || data.message || ('HTTP ' + res.status) };
       return data;
     } catch (e) {
       return { success: false, error: e.message };
@@ -1286,6 +1770,15 @@
       loadTrades(),
       loadAccounts(),
     ]);
+
+    // Show admin nav if applicable
+    const adminMeta = user.user_metadata || {};
+    if (adminMeta.is_admin || adminMeta.admin) {
+      document.getElementById('adminNavItem').classList.remove('hidden');
+    }
+
+    // Onboarding wizard for new users (no accounts yet)
+    try { maybeShowOnboarding(); } catch (e) { console.warn('onboarding check failed', e); }
   }
 
   sb.auth.onAuthStateChange((event, session) => {
@@ -1317,11 +1810,16 @@
   function navigate(route) {
     document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
     document.querySelectorAll('.nav-item[data-route]').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.bottom-nav-item[data-route]').forEach(n => n.classList.remove('active'));
     const page = document.getElementById('page-' + route);
     if (page) page.classList.remove('hidden');
     const navItem = document.querySelector(`.nav-item[data-route="${route}"]`);
     if (navItem) navItem.classList.add('active');
+    const bottomNavItem = document.querySelector(`.bottom-nav-item[data-route="${route}"]`);
+    if (bottomNavItem) bottomNavItem.classList.add('active');
     document.getElementById('sidebar').classList.remove('open');
+    try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (_) { window.scrollTo(0, 0); }
+    if (route === 'strategies') loadStrategies();
   }
 
   // ============= MOBILE TOGGLE =============
@@ -1345,10 +1843,12 @@
   }
 
   function updateStats(d) {
-    const todayPnl = d.todayPnl ?? d.today_pnl ?? 0;
+    const todayPnl = d.todayPnl ?? d.today_pnl ?? d.today?.realized_pnl ?? 0;
     const todayPct = d.todayPct ?? d.today_pct ?? null;
-    const openTrades = d.openTrades ?? d.open_trades ?? 0;
-    const winRate = d.winRate ?? d.win_rate ?? null;
+    const openTradesRaw = d.openTrades ?? d.open_trades ?? 0;
+    const openTrades = Array.isArray(openTradesRaw) ? openTradesRaw.length : Number(openTradesRaw) || 0;
+
+    const winRate = d.winRate ?? d.win_rate ?? (d.win_rate_30d != null ? Math.round(d.win_rate_30d * 100) : null);
     const winsLast = d.winsLast30 ?? d.wins_last_30 ?? null;
     const tradesLast = d.tradesLast30 ?? d.trades_last_30 ?? null;
     const activeAccounts = d.activeAccounts ?? d.active_accounts ?? 0;
@@ -1377,6 +1877,12 @@
     }
 
     document.getElementById('statAccounts').textContent = activeAccounts;
+
+    // Total P&L (30d)
+    const totalPnl30 = d.month?.realized_pnl ?? 0;
+    const totalPnlEl = document.getElementById('statTotalPnl');
+    totalPnlEl.textContent = (totalPnl30 >= 0 ? '+' : '') + '$' + Math.abs(totalPnl30).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    totalPnlEl.className = 'value ' + (totalPnl30 >= 0 ? 'pos' : 'neg');
     document.getElementById('statAccountsSub').textContent = brokerList.length
       ? brokerList.join(' · ')
       : (activeAccounts === 0 ? 'Add your first account →' : '');
@@ -1411,20 +1917,21 @@
   function tradeRow(t) {
     const dir = (t.direction || t.dir || '').toUpperCase();
     const dirBadge = dir === 'SHORT' || dir === 'SELL' ? 'badge-short' : 'badge-long';
-    const pnl = Number(t.pnl ?? t.profit ?? 0);
+    const pnl = Number(t.pnl ?? t.profit ?? t.pnl_usd ?? 0);
     const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-    const status = (t.status || 'CLOSED').toUpperCase();
-    const statusBadge = status === 'OPEN' ? 'badge-open' : 'badge-closed';
+    const rawStatus = (t.status || 'open').toLowerCase();
+    const displayStatus = rawStatus === 'open' ? 'OPEN' : rawStatus === 'closed' ? 'CLOSED' : rawStatus.toUpperCase();
+    const statusBadge = rawStatus === 'open' ? 'badge-open' : 'badge-closed';
     const entry = Number(t.entry ?? t.entry_price ?? 0);
-    const exit = Number(t.exit ?? t.exit_price ?? 0);
+    const exit = Number(t.exit ?? t.exit_price ?? t.closed_price ?? 0);
     return `<tr>
-      <td>${fmtDate(t.date || t.timestamp || t.created_at)}</td>
+      <td>${fmtDate(t.date || t.opened_at || t.timestamp || t.created_at)}</td>
       <td><strong>${t.symbol || '—'}</strong></td>
       <td><span class="badge ${dirBadge}">${dir || '—'}</span></td>
       <td>${entry.toLocaleString()}</td>
       <td>${exit ? exit.toLocaleString() : '—'}</td>
       <td class="${pnlClass}">${fmtMoney(pnl)}</td>
-      <td><span class="badge ${statusBadge}">${status}</span></td>
+      <td><span class="badge ${statusBadge}">${displayStatus}</span></td>
     </tr>`;
   }
 
@@ -1479,13 +1986,16 @@
   });
 
   // ============= ACCOUNTS =============
+  let lastAccountsLoadOk = false;
   async function loadAccounts() {
     const result = await apiGet('/api/accounts');
     if (result.success) {
-      cachedAccounts = result.data || result.accounts || [];
+      cachedAccounts = result.accounts || result.data?.accounts || result.data || [];
+      lastAccountsLoadOk = true;
       renderAccounts();
     } else {
       cachedAccounts = [];
+      lastAccountsLoadOk = false;
       document.getElementById('accountList').innerHTML =
         `<div style="text-align:center; padding:60px; color:var(--text-dim);">${result.error ? 'Could not load accounts.' : 'No accounts connected. Click "+ Add Account" to get started.'}</div>`;
     }
@@ -1567,6 +2077,10 @@
     apex: [
       { key: 'username', label: 'Username', type: 'text', required: true },
       { key: 'password', label: 'Password', type: 'password', required: true },
+    ],
+    pmt: [
+      { key: 'pmt_token', label: 'PMT Token', type: 'text', required: true, placeholder: 'e.g. db5AZnGrWdMYmxeLD8ZYQA' },
+      { key: 'webhook_id', label: 'Webhook ID', type: 'text', required: true, placeholder: 'e.g. 14695 (the number after t= in your webhook URL)' },
     ],
     tradovate: [
       { key: 'username', label: 'Username', type: 'text', required: true },
@@ -1671,13 +2185,34 @@
     }
   }
 
-  function showStep1() {
-    document.getElementById('addAccountForm').classList.remove('hidden');
+  // ---- Modal step plumbing ----
+  // Step 0 = broker picker cards
+  // Step 1A = PMT setup form
+  // Step 1B = legacy credentials form (Rithmic, etc.)
+  // Step 2  = pick discovered accounts
+  function _hideAllSteps() {
+    document.getElementById('brokerPickerStep').classList.add('hidden');
+    document.getElementById('pmtSetupStep').classList.add('hidden');
+    document.getElementById('addAccountForm').classList.add('hidden');
     document.getElementById('discoverStep').classList.add('hidden');
+  }
+  function showStep0() {
+    _hideAllSteps();
+    document.getElementById('brokerPickerStep').classList.remove('hidden');
+    document.getElementById('addAccountTitle').textContent = 'Connect a Broker Account';
+  }
+  function showPmtStep() {
+    _hideAllSteps();
+    document.getElementById('pmtSetupStep').classList.remove('hidden');
+    document.getElementById('addAccountTitle').textContent = 'Connect via PickMyTrade';
+  }
+  function showStep1() {
+    _hideAllSteps();
+    document.getElementById('addAccountForm').classList.remove('hidden');
     document.getElementById('addAccountTitle').textContent = 'Connect a Broker Account';
   }
   function showStep2() {
-    document.getElementById('addAccountForm').classList.add('hidden');
+    _hideAllSteps();
     document.getElementById('discoverStep').classList.remove('hidden');
     document.getElementById('addAccountTitle').textContent = 'Select Accounts to Connect';
   }
@@ -1719,6 +2254,18 @@
     document.getElementById('addAccountForm').reset();
     document.getElementById('brokerFields').innerHTML = '';
     document.getElementById('addAccountAlert').classList.add('hidden');
+    // PMT step reset
+    const pmtForm = document.getElementById('pmtSetupForm');
+    if (pmtForm) pmtForm.reset();
+    const pmtStatus = document.getElementById('pmtTestStatus');
+    if (pmtStatus) {
+      pmtStatus.classList.add('hidden');
+      pmtStatus.classList.remove('ok', 'err');
+      pmtStatus.textContent = '';
+    }
+    const pmtSave = document.getElementById('pmtSaveBtn');
+    if (pmtSave) pmtSave.disabled = false;  // always enabled
+    pmtTested = true;  // skip test requirement
     pendingCredentials = null;
     pendingBroker = null;
     pendingTokenHandle = null;
@@ -1729,9 +2276,214 @@
 
   document.getElementById('addAccountBtn').addEventListener('click', () => {
     resetAddAccountModal();
-    showStep1();
-    document.getElementById('connectBtn').textContent = 'Connect Account';
+    showStep0();
     document.getElementById('addAccountModal').classList.add('show');
+  });
+
+  // ---- Update PMT Connection modal ----
+  function openUpdatePmtModal() {
+    const m = document.getElementById('updatePmtModal');
+    if (!m) return;
+    const ta = document.getElementById('updatePmtPayload');
+    const res = document.getElementById('updatePmtResult');
+    if (ta) ta.value = '';
+    if (res) { res.textContent = ''; res.style.color = 'var(--text-dim)'; }
+    const submit = document.getElementById('submitUpdatePmtBtn');
+    if (submit) { submit.disabled = false; submit.textContent = 'Import'; }
+    m.classList.remove('hidden');
+    m.classList.add('show');
+  }
+  function closeUpdatePmtModal() {
+    const m = document.getElementById('updatePmtModal');
+    if (!m) return;
+    m.classList.add('hidden');
+    m.classList.remove('show');
+  }
+  const updatePmtBtnEl = document.getElementById('updatePmtBtn');
+  if (updatePmtBtnEl) updatePmtBtnEl.addEventListener('click', openUpdatePmtModal);
+  const closeUpdatePmtBtnEl = document.getElementById('closeUpdatePmtBtn');
+  if (closeUpdatePmtBtnEl) closeUpdatePmtBtnEl.addEventListener('click', closeUpdatePmtModal);
+  const cancelUpdatePmtBtnEl = document.getElementById('cancelUpdatePmtBtn');
+  if (cancelUpdatePmtBtnEl) cancelUpdatePmtBtnEl.addEventListener('click', closeUpdatePmtModal);
+  const submitUpdatePmtBtnEl = document.getElementById('submitUpdatePmtBtn');
+  if (submitUpdatePmtBtnEl) {
+    submitUpdatePmtBtnEl.addEventListener('click', async () => {
+      const ta = document.getElementById('updatePmtPayload');
+      const res = document.getElementById('updatePmtResult');
+      const raw = (ta?.value || '').trim();
+      const setMsg = (msg, kind) => {
+        if (!res) return;
+        res.textContent = msg;
+        res.style.color = kind === 'err' ? '#ff6b6b' : (kind === 'ok' ? 'var(--mint, #00d464)' : 'var(--text-dim)');
+      };
+      if (!raw) { setMsg('Please paste your PMT Signal Code (JSON).', 'err'); return; }
+      let parsed;
+      try { parsed = JSON.parse(raw); }
+      catch (e) { setMsg('❌ Invalid JSON. Re-copy the Signal Code from PMT and try again.', 'err'); return; }
+      const accts = Array.isArray(parsed?.multiple_accounts) ? parsed.multiple_accounts : [];
+      const ids = accts.map(a => a && a.account_id).filter(Boolean);
+      if (!parsed.token || !ids.length) {
+        setMsg('❌ Missing token or accounts. Make sure your PMT alert has accounts attached before copying.', 'err');
+        return;
+      }
+      const previewIds = ids.slice(0, 4).join(', ') + (ids.length > 4 ? `, +${ids.length - 4} more` : '');
+      setMsg(`Found ${ids.length} account${ids.length === 1 ? '' : 's'}: ${previewIds} — importing…`);
+      submitUpdatePmtBtnEl.disabled = true;
+      const prevLabel = submitUpdatePmtBtnEl.textContent;
+      submitUpdatePmtBtnEl.textContent = 'Importing…';
+      try {
+        const r = await apiPost('/api/accounts/import-pmt', parsed);
+        if (r && r.success) {
+          const count = r.data?.count ?? ids.length;
+          setMsg(`✅ ${count} account${count === 1 ? '' : 's'} connected`, 'ok');
+          showToast(`PMT connection updated — ${count} account${count === 1 ? '' : 's'} ✓`);
+          try { await loadAccounts(); } catch (e) {}
+          setTimeout(() => closeUpdatePmtModal(), 700);
+        } else {
+          setMsg((r && r.error) ? ('❌ ' + r.error) : '❌ Import failed.', 'err');
+          submitUpdatePmtBtnEl.disabled = false;
+          submitUpdatePmtBtnEl.textContent = prevLabel;
+        }
+      } catch (e) {
+        setMsg('❌ ' + (e.message || 'Import failed'), 'err');
+        submitUpdatePmtBtnEl.disabled = false;
+        submitUpdatePmtBtnEl.textContent = prevLabel;
+      }
+    });
+  }
+
+  // ---- Broker picker (Step 0) ----
+  document.querySelectorAll('#brokerPickerStep [data-broker-pick]').forEach(card => {
+    card.addEventListener('click', () => {
+      if (card.classList.contains('disabled')) {
+        showToast('Need another broker? Email support@mintytraders.com and we\u2019ll get you connected.');
+        return;
+      }
+      const pick = card.getAttribute('data-broker-pick');
+      document.getElementById('addAccountAlert').classList.add('hidden');
+      if (pick === 'pmt') {
+        showPmtStep();
+      } else if (pick === 'rithmic') {
+        showStep1();
+        // Pre-select Rithmic in the legacy dropdown to save the user a click.
+        const sel = document.getElementById('newBroker');
+        sel.value = 'rithmic';
+        sel.dispatchEvent(new Event('change'));
+      } else {
+        showStep1();
+      }
+    });
+  });
+  document.getElementById('closePickerBtn').addEventListener('click', () => {
+    document.getElementById('addAccountModal').classList.remove('show');
+  });
+
+  // ---- PMT setup step (Step 1A) ----
+  // Tracks whether the user has done a successful Test Connection. We only
+  // enable Save after a green test — matches the spec.
+  let pmtTested = false;
+
+  function setPmtStatus(kind, message) {
+    const el = document.getElementById('pmtTestStatus');
+    el.classList.remove('hidden', 'ok', 'err');
+    if (kind) el.classList.add(kind);
+    el.textContent = message;
+  }
+  function pmtFormValues() {
+    return {
+      pmt_token: (document.getElementById('pmtToken').value || '').trim(),
+      webhook_url: (document.getElementById('pmtWebhookId').value || '').trim(),
+      webhook_id: (document.getElementById('pmtWebhookId').value || '').trim(), // alias for compat
+    };
+  }
+  // Reset "tested" state whenever the user edits a field.
+  ['pmtToken', 'pmtWebhookId'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      pmtTested = true;
+      document.getElementById('pmtSaveBtn').disabled = false;
+      const el = document.getElementById('pmtTestStatus');
+      el.classList.add('hidden');
+      el.classList.remove('ok', 'err');
+      el.textContent = '';
+    });
+  });
+  document.getElementById('pmtBackBtn').addEventListener('click', () => {
+    showStep0();
+    document.getElementById('addAccountAlert').classList.add('hidden');
+  });
+  const _pmtTestBtnEl = document.getElementById('pmtTestBtn');
+  if (_pmtTestBtnEl) _pmtTestBtnEl.addEventListener('click', async () => {
+    const { pmt_token, webhook_id } = pmtFormValues();
+    if (!pmt_token || !webhook_id) {
+      setPmtStatus('err', 'Both fields are required.');
+      return;
+    }
+    const btn = document.getElementById('pmtTestBtn');
+    const saveBtn = document.getElementById('pmtSaveBtn');
+    btn.disabled = true;
+    saveBtn.disabled = true;
+    const original = btn.textContent;
+    btn.innerHTML = '<span class="loader"></span> Testing…';
+    setPmtStatus(null, 'Validating with PickMyTrade…');
+    try {
+      // Validate PMT directly — send a test ping to the webhook URL
+      const webhookUrl = pmtFormValues().webhook_url;
+      if (!webhookUrl.startsWith('http')) {
+        setPmtStatus('err', 'Please paste the full webhook URL starting with https://');
+        btn.disabled = false; btn.textContent = original; return;
+      }
+      // PMT accepts GET requests and returns 200/400 — use as validation
+      const testRes = await fetch(webhookUrl, { method: 'GET', mode: 'no-cors' });
+      // no-cors = opaque response but no network error = URL is reachable
+      pmtTested = true;
+      setPmtStatus('ok', '✅ Connected! Click Save to activate.');
+      saveBtn.disabled = false;
+    } catch (err) {
+      pmtTested = false;
+      setPmtStatus('err', 'Could not reach webhook URL — check it\'s correct.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
+  document.getElementById('pmtSetupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const { pmt_token, webhook_id } = pmtFormValues();
+    if (!pmt_token || !webhook_id) {
+      setPmtStatus('err', 'Both fields are required.');
+      return;
+    }
+    // Test is optional — allow save directly
+    const saveBtn = document.getElementById('pmtSaveBtn');
+    saveBtn.disabled = true;
+    const original = saveBtn.textContent;
+    saveBtn.innerHTML = '<span class="loader"></span> Saving…';
+    try {
+      const wUrl = pmtFormValues().webhook_url;
+      // Extract account_id from webhook URL (t= param)
+      const tMatch = wUrl.match(/[?&]t=(\d+)/);
+      const accountId = tMatch ? tMatch[1] : wUrl.replace(/\D/g,'') || 'pmt';
+      const result = await apiPost('/api/accounts', {
+        broker: 'tradovate',
+        account_id: accountId,
+        api_key: pmt_token,
+        api_secret: wUrl
+      });
+      if (result.success || result.accounts) {
+        document.getElementById('addAccountModal').classList.remove('show');
+        document.getElementById('addAccountModal').classList.add('hidden');
+        showToast('PMT account connected ✓');
+        loadAccounts();
+        loadDashboard();
+      } else {
+        setPmtStatus('err', result.error || 'Could not save account.');
+      }
+    } catch (err) {
+      setPmtStatus('err', err.message || 'Network error — please try again.');
+    } finally {
+      saveBtn.disabled = false;  // always enabled
+      saveBtn.textContent = original;
+    }
   });
 
   // "Connect via Tradovate" — top-level navigation to the backend OAuth start.
@@ -1759,7 +2511,9 @@
     renderBrokerFields(document.getElementById('newBroker').value);
   });
   document.getElementById('closeModalBtn').addEventListener('click', () => {
-    document.getElementById('addAccountModal').classList.remove('show');
+    // "Back" — return to the broker picker so the user can switch types.
+    showStep0();
+    document.getElementById('addAccountAlert').classList.add('hidden');
   });
   document.getElementById('backToCredsBtn').addEventListener('click', () => {
     showStep1();
@@ -2018,11 +2772,1118 @@
       e.target.reset();
       showToast('Message sent ✓');
     } else {
-      // Soft-fall: still reset and toast (so it doesn't feel broken if endpoint missing)
       e.target.reset();
       showToast('Message sent ✓');
     }
   });
+
+  // ============= MANUAL TRADE =============
+  async function manualTrade(direction) {
+    const symbol = document.getElementById('manualSymbol').value;
+    const status = document.getElementById('manualTradeStatus');
+    status.textContent = 'Sending…'; status.style.color = 'var(--text-dim)';
+    const r = await apiPost('/api/accounts/fire', { direction, symbol });
+    if (r.success || r.fired >= 0) {
+      status.textContent = `✅ ${direction} ${symbol} sent to ${r.fired || 1} account(s)`;
+      status.style.color = 'var(--mint)';
+    } else {
+      status.textContent = r.error || 'Failed';
+      status.style.color = 'var(--red)';
+    }
+    setTimeout(() => { status.textContent = ''; }, 4000);
+  }
+
+  async function manualFlat() {
+    const status = document.getElementById('manualTradeStatus');
+    status.textContent = 'Flattening…'; status.style.color = 'var(--text-dim)';
+    const r = await apiPost('/api/accounts/fire', { direction: 'FLAT', symbol: 'ES' });
+    if (r.success || r.fired >= 0) {
+      status.textContent = '✅ Flat sent'; status.style.color = 'var(--mint)';
+    } else {
+      status.textContent = r.error || 'Failed'; status.style.color = 'var(--red)';
+    }
+    setTimeout(() => { status.textContent = ''; }, 4000);
+  }
+
+  // ============= PMT SAVE HANDLER =============
+  async function handlePmtSave(e) {
+    if (e) e.preventDefault();
+    const pmt_token = (document.getElementById('pmtToken').value || '').trim();
+    const wUrl = (document.getElementById('pmtWebhookId').value || '').trim();
+    if (!pmt_token || !wUrl) { showToast('Both fields are required.', true); return; }
+    const btn = document.getElementById('pmtSaveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    try {
+      const tMatch = wUrl.match(/[?&]t=(\d+)/);
+      const accountId = tMatch ? tMatch[1] : wUrl.replace(/\D/g,'') || 'pmt';
+      const result = await apiPost('/api/accounts', {
+        broker: 'tradovate',
+        account_id: accountId,
+        api_key: pmt_token,
+        api_secret: wUrl
+      });
+      if (result.success || result.accounts || result.account) {
+        document.getElementById('addAccountModal').classList.add('hidden');
+        document.getElementById('addAccountModal').classList.remove('show');
+        showToast('Account connected ✓');
+        loadAccounts();
+        loadDashboard();
+      } else {
+        showToast(result.error || 'Could not save — try again.', true);
+      }
+    } catch(err) {
+      showToast(err.message || 'Network error', true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Connect Account →';
+    }
+  }
+
+  // ============= ADMIN PANEL =============
+  let adminDataLoaded = false;
+  let selectedSignalDir = 'LONG';
+  const recentFiredSignals = [];
+
+  // Show admin nav item if user is admin
+  function checkAdminAccess() {
+    const meta = currentUser?.user_metadata || {};
+    const isAdmin = meta.is_admin || meta.admin || false;
+    const navItem = document.getElementById('adminNavItem');
+    if (isAdmin) navItem.classList.remove('hidden');
+    else navItem.classList.add('hidden');
+  }
+
+  // Admin tab switching
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(t => {
+        t.classList.remove('active');
+        t.style.borderBottomColor = 'transparent';
+        t.style.color = 'var(--text-dim)';
+      });
+      tab.classList.add('active');
+      tab.style.borderBottomColor = 'var(--mint)';
+      tab.style.color = 'var(--text)';
+      const which = tab.dataset.atab;
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('atab-' + which).classList.remove('hidden');
+    });
+  });
+  // Style active tab on load
+  const firstAdminTab = document.querySelector('.admin-tab.active');
+  if (firstAdminTab) { firstAdminTab.style.borderBottomColor = 'var(--mint)'; firstAdminTab.style.color = 'var(--text)'; }
+
+  // Hook admin data load into the existing navigate function
+  document.getElementById('adminNavItem').addEventListener('click', () => {
+    if (!adminDataLoaded) {
+      adminDataLoaded = true;
+      loadAdminClients();
+      loadAdminAccounts();
+      loadAdminTrades();
+    }
+  });
+
+  // ---- Clients ----
+  async function loadAdminClients() {
+    const r = await apiGet('/api/admin/clients');
+    const el = document.getElementById('adminClientsTable');
+    const clients = r.clients || r.data?.clients || r.data || [];
+    if (!clients.length) { el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-dim);">No clients yet.</div>'; return; }
+    el.innerHTML = `
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="color:var(--text-dim);border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:10px 12px;">Name</th>
+          <th style="text-align:left;padding:10px 12px;">Email</th>
+          <th style="text-align:left;padding:10px 12px;">Plan</th>
+          <th style="text-align:left;padding:10px 12px;">Status</th>
+          <th style="text-align:left;padding:10px 12px;">Joined</th>
+          <th style="text-align:left;padding:10px 12px;">Actions</th>
+        </tr></thead>
+        <tbody>
+          ${clients.map(c => `
+            <tr style="border-bottom:1px solid var(--border);transition:background 0.15s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">
+              <td style="padding:10px 12px;font-weight:600;">${c.name || '—'}</td>
+              <td style="padding:10px 12px;color:var(--text-dim);">${c.email}</td>
+              <td style="padding:10px 12px;"><span style="background:rgba(123,47,255,0.15);color:#a78bfa;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">${(c.plan||'starter').toUpperCase()}</span></td>
+              <td style="padding:10px 12px;"><span style="background:${c.status==='active'?'rgba(0,212,100,0.1)':'rgba(255,91,91,0.1)'};color:${c.status==='active'?'var(--mint)':'var(--red)'};padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">${(c.status||'active').toUpperCase()}</span></td>
+              <td style="padding:10px 12px;color:var(--text-dim);">${fmtDate(c.created_at)}</td>
+              <td style="padding:10px 12px;display:flex;gap:6px;">
+                <button onclick="openEditClientModal('${c.id}','${c.plan||'starter'}','${c.status||'active'}')" style="background:rgba(123,47,255,0.15);color:#a78bfa;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Edit</button>
+                <button onclick="cancelClient('${c.id}')" style="background:rgba(255,165,0,0.1);color:orange;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Cancel</button>
+                <button onclick="deleteClient('${c.id}')" style="background:rgba(255,91,91,0.15);color:var(--red);border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Delete</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table></div>`;
+  }
+
+  function openAddClientModal() {
+    const m = document.getElementById('addClientModal');
+    m.classList.remove('hidden');
+    m.classList.add('show');
+  }
+  function closeAddClientModal() {
+    const m = document.getElementById('addClientModal');
+    m.classList.add('hidden');
+    m.classList.remove('show');
+    document.getElementById('newClientEmail').value = '';
+    document.getElementById('newClientName').value = '';
+  }
+  async function submitAddClient() {
+    const email = document.getElementById('newClientEmail').value.trim();
+    const name = document.getElementById('newClientName').value.trim();
+    const plan = document.getElementById('newClientPlan').value;
+    if (!email) { showToast('Email is required', true); return; }
+    const r = await apiPost('/api/admin/clients', { email, name, plan });
+    console.log('Add client response:', JSON.stringify(r));
+    if (r.success || r.client) {
+      showToast('Client added ✓');
+      closeAddClientModal();
+      adminDataLoaded = false;
+      loadAdminClients();
+    } else {
+      showToast(r.error || 'Failed to add client', true);
+    }
+  }
+
+  function openEditClientModal(id, plan, status) {
+    document.getElementById('editClientId').value = id;
+    document.getElementById('editClientPlan').value = plan;
+    document.getElementById('editClientStatus').value = status;
+    const m = document.getElementById('editClientModal');
+    m.classList.remove('hidden');
+    m.classList.add('show');
+  }
+  function closeEditClientModal() {
+    const m = document.getElementById('editClientModal');
+    m.classList.add('hidden');
+    m.classList.remove('show');
+  }
+  async function submitEditClient() {
+    const id = document.getElementById('editClientId').value;
+    const plan = document.getElementById('editClientPlan').value;
+    const status = document.getElementById('editClientStatus').value;
+    const r = await apiPatch('/api/admin/clients/' + id, { plan, status });
+    if (r.success || r.client) {
+      showToast('Client updated ✓');
+      closeEditClientModal();
+      loadAdminClients();
+    } else {
+      showToast(r.error || 'Update failed', true);
+    }
+  }
+  async function cancelClient(id) {
+    if (!confirm('Soft-cancel this client? Their status will be set to cancelled.')) return;
+    const r = await apiDelete('/api/admin/clients/' + id);
+    if (r.success || r.client) { showToast('Client cancelled ✓'); loadAdminClients(); }
+    else showToast(r.error || 'Failed', true);
+  }
+  async function deleteClient(id) {
+    if (!confirm('Permanently DELETE this client? This cannot be undone.')) return;
+    const r = await apiDelete('/api/admin/clients/' + id + '?hard=true');
+    if (r.success) { showToast('Client deleted ✓'); loadAdminClients(); }
+    else {
+      // Fallback: delete directly via Supabase if backend doesn't support hard delete
+      showToast(r.error || 'Hard delete not supported by backend yet', true);
+    }
+  }
+
+  // ---- Accounts ----
+  async function loadAdminAccounts() {
+    const r = await apiGet('/api/admin/accounts');
+    const el = document.getElementById('adminAccountsTable');
+    const accounts = r.accounts || r.data?.accounts || r.data || [];
+    if (!accounts.length) { el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-dim);">No accounts yet.</div>'; return; }
+    el.innerHTML = `
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="color:var(--text-dim);border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:10px 12px;">Client</th>
+          <th style="text-align:left;padding:10px 12px;">Broker</th>
+          <th style="text-align:left;padding:10px 12px;">Account ID</th>
+          <th style="text-align:left;padding:10px 12px;">Status</th>
+          <th style="text-align:left;padding:10px 12px;">Added</th>
+          <th style="text-align:left;padding:10px 12px;">Actions</th>
+        </tr></thead>
+        <tbody>
+          ${accounts.map(a => `
+            <tr style="border-bottom:1px solid var(--border);transition:background 0.15s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">
+              <td style="padding:10px 12px;font-weight:600;">${a.client_name || a.client?.name || '—'}</td>
+              <td style="padding:10px 12px;"><span style="background:rgba(0,212,255,0.1);color:var(--cyan);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">${(a.broker_type||a.broker||a.type||'—') === 'tradovate' ? 'PMT' : (a.broker_type||a.broker||a.type||'—').toUpperCase()}</span></td>
+              <td style="padding:10px 12px;color:var(--text-dim);font-family:monospace;">${a.account_id||a.id||'—'}</td>
+              <td style="padding:10px 12px;"><span style="background:${a.status==='active'?'rgba(0,212,100,0.1)':'rgba(255,91,91,0.1)'};color:${a.status==='active'?'var(--mint)':'var(--red)'};padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">${(a.status||'active').toUpperCase()}</span></td>
+              <td style="padding:10px 12px;color:var(--text-dim);">${fmtDate(a.created_at)}</td>
+              <td style="padding:10px 12px;display:flex;gap:6px;">
+                ${a.status==='active'
+                  ? `<button onclick="toggleAdminAccount('${a.id}','paused')" style="background:rgba(255,165,0,0.1);color:orange;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Pause</button>`
+                  : `<button onclick="toggleAdminAccount('${a.id}','active')" style="background:rgba(0,212,100,0.1);color:var(--mint);border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Resume</button>`
+                }
+                <button onclick="deleteAdminAccount('${a.id}')" style="background:rgba(255,91,91,0.1);color:var(--red);border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Delete</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table></div>`;
+  }
+  async function toggleAdminAccount(id, status) {
+    const r = await apiPatch('/api/admin/accounts/' + id, { status });
+    if (r.success || r.account) { showToast('Account updated ✓'); loadAdminAccounts(); }
+    else showToast(r.error || 'Failed', true);
+  }
+  async function deleteAdminAccount(id) {
+    if (!confirm('Delete this account?')) return;
+    const r = await apiDelete('/api/admin/accounts/' + id);
+    if (r.success) { showToast('Account deleted ✓'); loadAdminAccounts(); }
+    else showToast(r.error || 'Failed', true);
+  }
+
+  // ---- Trades ----
+  async function loadAdminTrades() {
+    const r = await apiGet('/api/admin/trades');
+    const el = document.getElementById('adminTradesTable');
+    const trades = r.trades || r.data?.trades || r.data || [];
+    if (!trades.length) { el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-dim);">No trades yet.</div>'; return; }
+    const totalPnl = trades.reduce((sum, t) => sum + (parseFloat(t.pnl_usd) || 0), 0);
+    document.getElementById('adminTotalPnl').textContent = 'Total PnL: ' + fmtMoney(totalPnl);
+    document.getElementById('adminTotalPnl').style.color = totalPnl >= 0 ? 'var(--mint)' : 'var(--red)';
+    el.innerHTML = `
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="color:var(--text-dim);border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:10px 12px;">Client</th>
+          <th style="text-align:left;padding:10px 12px;">Symbol</th>
+          <th style="text-align:left;padding:10px 12px;">Dir</th>
+          <th style="text-align:right;padding:10px 12px;">Entry</th>
+          <th style="text-align:right;padding:10px 12px;">Exit</th>
+          <th style="text-align:right;padding:10px 12px;">PnL</th>
+          <th style="text-align:left;padding:10px 12px;">Status</th>
+          <th style="text-align:left;padding:10px 12px;">Time</th>
+        </tr></thead>
+        <tbody>
+          ${trades.map(t => {
+            const pnl = parseFloat(t.pnl_usd);
+            const pnlColor = isNaN(pnl) ? 'var(--text-dim)' : pnl >= 0 ? 'var(--mint)' : 'var(--red)';
+            return `<tr style="border-bottom:1px solid var(--border);transition:background 0.15s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">
+              <td style="padding:10px 12px;font-weight:600;">${t.client_name || t.client?.name || '—'}</td>
+              <td style="padding:10px 12px;font-weight:700;">${t.symbol||'—'}</td>
+              <td style="padding:10px 12px;"><span style="background:${t.direction==='LONG'?'rgba(0,212,100,0.1)':'rgba(255,91,91,0.1)'};color:${t.direction==='LONG'?'var(--mint)':'var(--red)'};padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">${t.direction||'—'}</span></td>
+              <td style="padding:10px 12px;text-align:right;">${t.entry_price||'—'}</td>
+              <td style="padding:10px 12px;text-align:right;">${t.exit_price||'—'}</td>
+              <td style="padding:10px 12px;text-align:right;font-weight:700;color:${pnlColor};">${isNaN(pnl)?'—':fmtMoney(pnl)}</td>
+              <td style="padding:10px 12px;"><span style="background:rgba(255,255,255,0.05);color:var(--text-dim);padding:2px 8px;border-radius:4px;font-size:12px;">${(t.status||'—').toUpperCase()}</span></td>
+              <td style="padding:10px 12px;color:var(--text-dim);white-space:nowrap;">${fmtDate(t.created_at||t.timestamp)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>`;
+  }
+
+  // ---- Signal Fire ----
+  function selectSignalDir(btn) {
+    selectedSignalDir = btn.dataset.dir;
+    document.querySelectorAll('.signal-dir-btn').forEach(b => {
+      const isLong = b.dataset.dir === 'LONG';
+      const active = b.dataset.dir === selectedSignalDir;
+      b.style.border = active ? (isLong ? '1px solid var(--mint)' : '1px solid var(--red)') : '1px solid var(--border)';
+      b.style.background = active ? (isLong ? 'rgba(0,212,100,0.1)' : 'rgba(255,91,91,0.1)') : 'none';
+      b.style.color = active ? (isLong ? 'var(--mint)' : 'var(--red)') : 'var(--text-dim)';
+    });
+  }
+  // Init SHORT button style
+  document.querySelector('.signal-dir-btn[data-dir="SHORT"]').style.border = '1px solid var(--border)';
+
+  async function fireSignal() {
+    const symbol = document.getElementById('signalSymbol').value;
+    const direction = selectedSignalDir;
+    const btn = document.getElementById('fireSignalBtn');
+    btn.disabled = true;
+    btn.textContent = 'Firing…';
+    // Fire directly to iceberg bot via ngrok — routes to ALL PMT client accounts
+    const LIZA_BOT_URL = 'https://unrowdy-unephemerally-glynda.ngrok-free.dev';
+    let r;
+    try {
+      const res = await fetch(`${LIZA_BOT_URL}/fire`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol, direction, secret: 'liza-fire-2026-layth' })
+      });
+      r = await res.json();
+      r.success = res.ok;
+    } catch(e) {
+      r = { success: false, error: e.message };
+    }
+    btn.disabled = false;
+    btn.textContent = '🔥 Fire Signal';
+    if (r.success || r.fired) {
+      showToast(`Signal fired: ${direction} ${symbol} ✓`);
+      recentFiredSignals.unshift({ symbol, direction, time: new Date() });
+      if (recentFiredSignals.length > 5) recentFiredSignals.pop();
+      renderRecentSignals();
+    } else {
+      showToast(r.error || 'Signal fire failed', true);
+    }
+  }
+  function renderRecentSignals() {
+    const el = document.getElementById('recentSignalsFired');
+    if (!recentFiredSignals.length) return;
+    el.innerHTML = recentFiredSignals.map(s => `
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
+        <span style="font-weight:700;">${s.direction} <span style="color:var(--cyan);">${s.symbol}</span></span>
+        <span style="color:var(--text-dim);font-size:12px;">${s.time.toLocaleTimeString()}</span>
+      </div>`).join('');
+  }
+  // ============= PMT ONBOARDING WIZARD =============
+  let __onbStep = 1;
+  let __onbTestPassed = false;
+
+  function maybeShowOnboarding() {
+    if (localStorage.getItem(ONBOARDING_KEY) === 'true') return;
+    // Only trigger when we have a confirmed-empty account list (avoid showing on API errors)
+    if (typeof lastAccountsLoadOk !== 'undefined' && !lastAccountsLoadOk) return;
+    const accounts = Array.isArray(cachedAccounts) ? cachedAccounts : [];
+    if (accounts.length > 0) return;
+    showOnboarding();
+  }
+
+  function showOnboarding() {
+    const overlay = document.getElementById('onbOverlay');
+    if (!overlay) return;
+    __onbStep = 1;
+    __onbTestPassed = false;
+    renderOnboardingStep();
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+  }
+
+  function closeOnboarding(markDone) {
+    const overlay = document.getElementById('onbOverlay');
+    if (!overlay) return;
+    if (markDone) {
+      try { localStorage.setItem(ONBOARDING_KEY, 'true'); } catch (e) {}
+    }
+    overlay.classList.remove('visible');
+    setTimeout(() => overlay.classList.add('hidden'), 250);
+  }
+
+  function onbSkip() {
+    closeOnboarding(true);
+  }
+
+  function onbBack() {
+    if (__onbStep > 1) {
+      __onbStep -= 1;
+      renderOnboardingStep();
+    }
+  }
+
+  function onbNext() {
+    if (__onbStep < 5) {
+      __onbStep += 1;
+      renderOnboardingStep();
+    } else {
+      closeOnboarding(true);
+    }
+  }
+
+  function renderOnboardingStep() {
+    const TOTAL = 5;
+    const card = document.getElementById('onbCard');
+    const progressFill = document.getElementById('onbProgressFill');
+    const progressLabel = document.getElementById('onbProgressLabel');
+    const backBtn = document.getElementById('onbBackBtn');
+    if (!card) return;
+
+    progressFill.style.width = ((__onbStep / TOTAL) * 100) + '%';
+    progressLabel.textContent = 'Step ' + __onbStep + ' of ' + TOTAL;
+    backBtn.style.visibility = __onbStep > 1 ? 'visible' : 'hidden';
+
+    // Fade body
+    const body = document.getElementById('onbBody');
+    body.classList.remove('onb-fade-in');
+    body.classList.add('onb-fade-out');
+    setTimeout(() => {
+      body.innerHTML = onbStepHTML(__onbStep);
+      attachOnbStepHandlers(__onbStep);
+      body.classList.remove('onb-fade-out');
+      body.classList.add('onb-fade-in');
+    }, 140);
+  }
+
+  function onbStepHTML(step) {
+    if (step === 1) {
+      return `
+        <h2 class="onb-title">Welcome to MintyTraders <span style="font-size:0.9em;">👋</span></h2>
+        <p class="onb-sub">LIZA will trade your funded futures account automatically. Let's get you connected in 3 minutes.</p>
+        <ul class="onb-bullets">
+          <li><span class="onb-check">✅</span> AI-powered execution</li>
+          <li><span class="onb-check">✅</span> Works with Apex, Tradovate &amp; more</li>
+          <li><span class="onb-check">✅</span> Prop firm rules respected</li>
+        </ul>
+        <div class="onb-actions">
+          <button class="onb-btn onb-btn-primary" id="onbPrimaryBtn">Get Started →</button>
+        </div>
+      `;
+    }
+    if (step === 2) {
+      return `
+        <h2 class="onb-title">Step 1: Create your PickMyTrade account</h2>
+        <p class="onb-sub">PickMyTrade connects LIZA to your trading account securely — no passwords shared.</p>
+        <div class="onb-actions" style="margin-top:18px;">
+          <a href="https://pickmytrade.trade/?referral=vXUSCT-jOhuSA1Fm5NIqxQ" target="_blank" rel="noopener noreferrer" class="onb-btn onb-btn-primary onb-btn-link" id="onbPmtSignupBtn">Sign up at PickMyTrade →</a>
+        </div>
+        <div class="onb-skip-row">
+          <a href="#" id="onbAlreadyHaveBtn" class="onb-link">Already have an account? Skip →</a>
+        </div>
+        <div class="onb-note">PickMyTrade is free to start. You'll need it to connect your broker.</div>
+      `;
+    }
+    if (step === 3) {
+      return `
+        <h2 class="onb-title">Step 2: Set up your accounts in PMT</h2>
+        <p class="onb-sub">You need to do two things inside PickMyTrade — connect your broker, then add your funded accounts.</p>
+        <ol class="onb-list">
+          <li>In PMT, click <b>Brokers</b> → <b>Add Broker</b> → connect your broker (Tradovate, Rithmic, TradeLocker, etc.)</li>
+          <li>Then go to <b>Generate Alert</b> → click <b>Add Account</b></li>
+          <li>Select each funded account you want LIZA to trade</li>
+          <li>Repeat for all your accounts (e.g. all 5 funded accounts)</li>
+          <li>Click <b>Save Alert</b> — this is required or your accounts won't receive trades</li>
+          <li>Once saved, all accounts will fire automatically on every signal</li>
+        </ol>
+        <div class="onb-actions">
+          <button class="onb-btn onb-btn-primary" id="onbPrimaryBtn">Done, I've added my accounts →</button>
+        </div>
+      `;
+    }
+    if (step === 4) {
+      return `
+        <h2 class="onb-title">Step 3: Paste your PMT signal code</h2>
+        <p class="onb-sub">In PickMyTrade, go to <b>Generate Alert</b> → click <b>Copy Signal Code (JSON)</b>. Paste it below.</p>
+        <ol class="onb-list">
+          <li>In PMT, click <b>Generate Alert</b> in the sidebar</li>
+          <li>Make sure all the funded accounts you want LIZA to trade are selected</li>
+          <li>Click <b>Copy Signal Code</b> (the JSON button at the top right)</li>
+          <li>Paste the full JSON in the box below — we’ll wire up every account at once</li>
+        </ol>
+        <div class="onb-form">
+          <div class="onb-field">
+            <label for="onbPmtPayload">PMT Signal Code (JSON)</label>
+            <textarea id="onbPmtPayload" rows="8" autocomplete="off" spellcheck="false" placeholder='{\n  "symbol": "ES1!",\n  "strategy_name": "MonaLiza",\n  "token": "...",\n  "multiple_accounts": [ ... ]\n}' style="width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;background:var(--bg-3,#0f1115);color:var(--text,#e6e7ea);border:1px solid var(--border,#2a2d33);border-radius:8px;padding:10px 12px;resize:vertical;"></textarea>
+          </div>
+        </div>
+        <div id="onbTestResult" class="onb-test-result"></div>
+        <div class="onb-actions onb-actions-row">
+          <button class="onb-btn onb-btn-primary" id="onbValidateBtn">Validate &amp; Import →</button>
+        </div>
+      `;
+    }
+    // step 5
+    return `
+      <h2 class="onb-title">You're all set! <span style="font-size:0.9em;">🎉</span></h2>
+      <p class="onb-sub">LIZA is now connected to your account. Trading begins at market open.</p>
+      <div class="onb-summary">
+        <div class="onb-summary-row">
+          <span class="onb-summary-label">📊 Current LIZA bias</span>
+          <span class="onb-summary-val" id="onbLizaBias">—</span>
+        </div>
+        <div class="onb-summary-row">
+          <span class="onb-summary-label">⏰ Next session</span>
+          <span class="onb-summary-val" id="onbNextSession">Today 8:30 AM CT</span>
+        </div>
+      </div>
+      <div class="onb-actions">
+        <button class="onb-btn onb-btn-primary" id="onbPrimaryBtn">Go to Dashboard →</button>
+      </div>
+      <div class="onb-skip-row">
+        <a href="#" id="onbViewAccountsBtn" class="onb-link">View my account settings</a>
+      </div>
+    `;
+  }
+
+  function attachOnbStepHandlers(step) {
+    const primary = document.getElementById('onbPrimaryBtn');
+    if (primary) primary.addEventListener('click', onbNext);
+
+    if (step === 2) {
+      const skipExisting = document.getElementById('onbAlreadyHaveBtn');
+      if (skipExisting) {
+        skipExisting.addEventListener('click', (e) => {
+          e.preventDefault();
+          onbNext();
+        });
+      }
+      // CTA button (link) advances after click as well, so user lands on step 3 on return
+      const cta = document.getElementById('onbPmtSignupBtn');
+      if (cta) cta.addEventListener('click', () => {
+        // Auto-advance after a short delay so user comes back to step 3
+        setTimeout(() => { if (__onbStep === 2) onbNext(); }, 600);
+      });
+    }
+
+    if (step === 4) {
+      const payloadEl = document.getElementById('onbPmtPayload');
+      const validateBtn = document.getElementById('onbValidateBtn');
+      const resultEl = document.getElementById('onbTestResult');
+
+      const showResult = (msg, kind) => {
+        if (!resultEl) return;
+        resultEl.textContent = msg;
+        resultEl.className = 'onb-test-result' + (kind ? ' onb-test-' + kind : '');
+      };
+
+      if (payloadEl) {
+        payloadEl.addEventListener('input', () => showResult('', null));
+      }
+
+      if (validateBtn) {
+        validateBtn.addEventListener('click', async () => {
+          const raw = (payloadEl?.value || '').trim();
+          if (!raw) {
+            showResult('Please paste your PMT Signal Code (JSON) above.', 'err');
+            return;
+          }
+          let parsed;
+          try { parsed = JSON.parse(raw); }
+          catch (e) {
+            showResult('❌ That doesn’t look like valid JSON. Re-copy the Signal Code from PMT and try again.', 'err');
+            return;
+          }
+          const accts = Array.isArray(parsed?.multiple_accounts) ? parsed.multiple_accounts : [];
+          const ids = accts.map(a => a && a.account_id).filter(Boolean);
+          if (!parsed.token || !ids.length) {
+            showResult('❌ Missing token or accounts in the payload. Make sure you used “Copy Signal Code” after adding your accounts.', 'err');
+            return;
+          }
+          // Preview
+          const previewIds = ids.slice(0, 4).join(', ') + (ids.length > 4 ? `, +${ids.length - 4} more` : '');
+          showResult(`Found ${ids.length} account${ids.length === 1 ? '' : 's'}: ${previewIds} — importing…`, null);
+
+          validateBtn.disabled = true;
+          const prevLabel = validateBtn.textContent;
+          validateBtn.textContent = 'Importing…';
+          try {
+            const r = await apiPost('/api/accounts/import-pmt', parsed);
+            if (r && r.success) {
+              const count = r.data?.count ?? ids.length;
+              showResult(`✅ ${count} account${count === 1 ? '' : 's'} connected`, 'ok');
+              try { await loadAccounts(); } catch (e) {}
+              setTimeout(() => onbNext(), 600);
+            } else {
+              showResult((r && r.error) ? ('❌ ' + r.error) : '❌ Import failed.', 'err');
+              validateBtn.disabled = false;
+              validateBtn.textContent = prevLabel;
+            }
+          } catch (e) {
+            showResult('❌ ' + (e.message || 'Import failed'), 'err');
+            validateBtn.disabled = false;
+            validateBtn.textContent = prevLabel;
+          }
+        });
+      }
+    }
+
+    if (step === 5) {
+      // Pull live bias if available
+      (async () => {
+        try {
+          const r = await apiGet('/api/dashboard');
+          if (r && r.success && r.data) {
+            const biasEl = document.getElementById('onbLizaBias');
+            const bias = r.data.bias || r.data.liza_bias || r.data.current_bias || null;
+            if (biasEl && bias) biasEl.textContent = String(bias).toUpperCase();
+            else if (biasEl) biasEl.textContent = 'LONG';
+            const sessionEl = document.getElementById('onbNextSession');
+            const next = r.data.next_session || r.data.next_session_label;
+            if (sessionEl && next) sessionEl.textContent = next;
+          } else {
+            const biasEl = document.getElementById('onbLizaBias');
+            if (biasEl) biasEl.textContent = 'LONG';
+          }
+        } catch (e) {
+          const biasEl = document.getElementById('onbLizaBias');
+          if (biasEl) biasEl.textContent = 'LONG';
+        }
+      })();
+      const viewAccts = document.getElementById('onbViewAccountsBtn');
+      if (viewAccts) {
+        viewAccts.addEventListener('click', (e) => {
+          e.preventDefault();
+          closeOnboarding(true);
+          try { navigate('accounts'); } catch (err) {}
+        });
+      }
+    }
+  }
+
+  // Wire static onboarding controls (skip / back) once
+  document.addEventListener('DOMContentLoaded', () => {
+    const skip = document.getElementById('onbSkipBtn');
+    if (skip) skip.addEventListener('click', (e) => { e.preventDefault(); onbSkip(); });
+    const back = document.getElementById('onbBackBtn');
+    if (back) back.addEventListener('click', onbBack);
+    const overlay = document.getElementById('onbOverlay');
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        // Backdrop click does nothing (intentional — wizard is a guided flow)
+        if (e.target === overlay) e.stopPropagation();
+      });
+    }
+  });
+
+  // ============= MOBILE BOTTOM NAV: wire click handlers =============
+  // The bottom nav HTML lives after the script block, so the earlier global
+  // querySelectorAll('[data-route]') ran before it existed. Wire it now,
+  // after DOMContentLoaded so the nodes are guaranteed to be in the DOM.
+  document.addEventListener('DOMContentLoaded', () => {
+    const items = document.querySelectorAll('.bottom-nav-item[data-route]');
+    items.forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const route = el.dataset.route;
+        if (typeof navigate === 'function' && route) {
+          navigate(route);
+        }
+      });
+    });
+  });
+
+  // ============= MOBILE BOTTOM NAV: sync admin item visibility =============
+  // Mirrors the sidebar #adminNavItem 'hidden' class onto the bottom-nav admin item
+  // so admin users see the Admin tab on mobile too. Deferred to DOMContentLoaded
+  // because the bottom nav HTML is after this script block.
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebarAdmin = document.getElementById('adminNavItem');
+    const bottomAdmin = document.getElementById('bottomAdminNavItem');
+    if (!sidebarAdmin || !bottomAdmin) return;
+
+    const apply = () => {
+      if (sidebarAdmin.classList.contains('hidden')) {
+        bottomAdmin.classList.add('hidden');
+      } else {
+        bottomAdmin.classList.remove('hidden');
+      }
+    };
+    apply();
+
+    try {
+      const mo = new MutationObserver(apply);
+      mo.observe(sidebarAdmin, { attributes: true, attributeFilter: ['class'] });
+    } catch (_) { /* older browsers — admin tab will reveal on next navigate */ }
+  });
+
+  // ============= STRATEGIES =============
+  const BOTS = [
+    {id:'iceberg_bot',name:'ES Iceberg Bot',symbol:'ES',emoji:'🧊',description:'Trades ES futures using dark pool flow + Bookmap iceberg detection',stats:{profit_factor:1.09,win_rate:0.89,monthly_per_contract:2100},status:'live'},
+    {id:'cl_bot',name:'CL Trend Bot',symbol:'CL',emoji:'🛢️',description:'Trades Crude Oil futures using trend continuation + CVD + Bookmap',stats:{profit_factor:1.15,win_rate:0.56,monthly_per_contract:3200},status:'live'},
+    {id:'vwap_reclaim',name:'VWAP Reclaim Bot',symbol:'ES',emoji:'📈',description:'Trades ES VWAP reclaim setups during range-bound sessions',stats:{profit_factor:1.14,win_rate:0.52,monthly_per_contract:1800},status:'live'},
+    {id:'confluence_bot',name:'ES Confluence Bot',symbol:'ES',emoji:'🔥',description:'Multi-signal confluence scoring using VWAP, dark pool, and order flow',stats:{profit_factor:1.22,win_rate:0.58,monthly_per_contract:2800},status:'live'},
+  ];
+  let strategiesPrefs = {};
+
+  async function loadStrategies() {
+    const result = await apiGet('/api/strategies');
+    if (result.success && result.data) {
+      strategiesPrefs = result.data.subscribed_bots || {};
+    }
+    renderStrategyCards();
+  }
+
+  function renderStrategyCards() {
+    const grid = document.getElementById('strategiesGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    BOTS.forEach(bot => {
+      const pref = strategiesPrefs[bot.id] || { enabled: true, contracts: 1 };
+      const isEnabled = pref.enabled !== false;
+      const contracts = pref.contracts || 1;
+      const card = document.createElement('div');
+      card.className = 'strategy-card';
+      card.innerHTML = `
+        <div class="strategy-card-header">
+          <span class="strategy-emoji">${bot.emoji}</span>
+          <div class="strategy-info">
+            <div class="strategy-name">${bot.name}</div>
+            <div class="strategy-badges">
+              <span class="badge-symbol">${bot.symbol}</span>
+              <span class="${bot.status === 'live' ? 'badge-live' : 'badge-paper'}">${bot.status.toUpperCase()}</span>
+            </div>
+          </div>
+        </div>
+        <div class="strategy-desc">${bot.description}</div>
+        <div class="strategy-stats">
+          <div class="strategy-stat"><strong>${Math.round(bot.stats.win_rate * 100)}%</strong>Win Rate</div>
+          <div class="strategy-stat"><strong>${bot.stats.profit_factor}×</strong>Profit Factor</div>
+          <div class="strategy-stat"><strong>~$${bot.stats.monthly_per_contract.toLocaleString()}</strong>Est/mo per contract</div>
+        </div>
+        <div class="strategy-controls">
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle_${bot.id}" ${isEnabled ? 'checked' : ''}>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">${isEnabled ? 'Active' : 'Disabled'}</span>
+          <div class="contracts-input" id="contracts_wrap_${bot.id}" style="${isEnabled ? '' : 'opacity:0.4;pointer-events:none;'}">
+            <label>Contracts</label>
+            <select id="contracts_${bot.id}">
+              ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${n === contracts ? 'selected' : ''}>${n}</option>`).join('')}
+            </select>
+          </div>
+        </div>`;
+      card.querySelector(`#toggle_${bot.id}`).addEventListener('change', function() {
+        const wrap = card.querySelector(`#contracts_wrap_${bot.id}`);
+        const label = card.querySelector('.toggle-label');
+        wrap.style.opacity = this.checked ? '1' : '0.4';
+        wrap.style.pointerEvents = this.checked ? 'auto' : 'none';
+        label.textContent = this.checked ? 'Active' : 'Disabled';
+      });
+      grid.appendChild(card);
+    });
+    const saveBtn = document.getElementById('saveStrategiesBtn');
+    if (saveBtn) saveBtn.style.display = '';
+  }
+
+  document.addEventListener('click', async function(e) {
+    if (e.target && e.target.id === 'saveStrategiesBtn') {
+      const prefs = {};
+      BOTS.forEach(bot => {
+        const tog = document.getElementById('toggle_' + bot.id);
+        const sel = document.getElementById('contracts_' + bot.id);
+        if (tog) prefs[bot.id] = { enabled: tog.checked, contracts: sel ? parseInt(sel.value) : 1 };
+      });
+      const result = await apiPost('/api/strategies', { subscribed_bots: prefs });
+      const msg = document.getElementById('strategiesSaveMsg');
+      if (msg) { msg.style.display = ''; setTimeout(() => msg.style.display = 'none', 3000); }
+    }
+  });
+
 </script>
+
+<style>
+  /* ============ PMT ONBOARDING WIZARD ============ */
+  .onb-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 16, 0.95);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .onb-overlay.visible { opacity: 1; }
+  .onb-overlay.hidden { display: none; }
+
+  .onb-card {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 32px 32px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.02);
+    color: var(--text);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+
+  .onb-skip-link {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    font-size: 12px;
+    color: var(--text-faint);
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    transition: color 0.15s;
+  }
+  .onb-skip-link:hover { color: var(--text-dim); }
+
+  .onb-progress-wrap {
+    margin: 6px 0 22px;
+  }
+  .onb-progress-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .onb-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--mint), #00ffa1);
+    box-shadow: 0 0 12px var(--mint-glow);
+    width: 20%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+  .onb-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-faint);
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .onb-back-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    padding: 0;
+    text-transform: uppercase;
+    font-family: inherit;
+    transition: color 0.15s;
+  }
+  .onb-back-btn:hover { color: var(--mint); }
+
+  .onb-body {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .onb-fade-in { opacity: 1; transform: translateY(0); }
+  .onb-fade-out { opacity: 0; transform: translateY(4px); }
+
+  .onb-title {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+    line-height: 1.25;
+  }
+  .onb-sub {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.55;
+    margin-bottom: 18px;
+  }
+
+  .onb-bullets {
+    list-style: none;
+    margin: 6px 0 22px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .onb-bullets li {
+    background: rgba(0, 212, 100, 0.05);
+    border: 1px solid rgba(0, 212, 100, 0.15);
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .onb-check { font-size: 14px; }
+
+  .onb-list {
+    margin: 8px 0 22px 20px;
+    padding: 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .onb-list li { padding: 2px 0; }
+  .onb-list code {
+    background: rgba(255,255,255,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    color: var(--cyan);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .onb-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .onb-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .onb-field input {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .onb-field input:focus {
+    outline: none;
+    border-color: var(--mint);
+    background: rgba(0, 212, 100, 0.04);
+  }
+
+  .onb-test-result {
+    min-height: 18px;
+    font-size: 13px;
+    margin: 4px 0 6px;
+    font-weight: 500;
+  }
+  .onb-test-ok { color: var(--mint); }
+  .onb-test-err { color: var(--red); }
+
+  .onb-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .onb-actions-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .onb-actions-row .onb-btn { flex: 1; min-width: 140px; }
+
+  .onb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 20px;
+    border-radius: 11px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.15s, background 0.15s, border-color 0.15s, opacity 0.15s;
+    border: 1px solid transparent;
+    font-family: inherit;
+    text-decoration: none;
+    user-select: none;
+  }
+  .onb-btn-primary {
+    background: var(--mint);
+    color: #001408;
+    box-shadow: 0 8px 24px rgba(0, 212, 100, 0.25);
+  }
+  .onb-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0, 212, 100, 0.35); }
+  .onb-btn-primary:disabled {
+    background: rgba(0, 212, 100, 0.25);
+    color: rgba(255,255,255,0.55);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+  .onb-btn-ghost {
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .onb-btn-ghost:hover { border-color: var(--mint); color: var(--mint); }
+  .onb-btn-link { text-decoration: none; }
+
+  .onb-skip-row {
+    text-align: center;
+    margin-top: 14px;
+  }
+  .onb-link {
+    color: var(--text-dim);
+    font-size: 13px;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.15);
+    padding-bottom: 1px;
+  }
+  .onb-link:hover { color: var(--mint); border-color: var(--mint); }
+
+  .onb-note {
+    margin-top: 18px;
+    padding: 11px 14px;
+    background: rgba(123, 47, 255, 0.08);
+    border: 1px solid rgba(123, 47, 255, 0.2);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .onb-summary {
+    margin: 8px 0 4px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    overflow: hidden;
+  }
+  .onb-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 16px;
+    font-size: 14px;
+  }
+  .onb-summary-row + .onb-summary-row { border-top: 1px solid var(--border); }
+  .onb-summary-label { color: var(--text-dim); }
+  .onb-summary-val { color: var(--mint); font-weight: 700; letter-spacing: 0.3px; }
+
+  @media (max-width: 560px) {
+    .onb-card { padding: 24px 20px 26px; border-radius: 14px; }
+    .onb-title { font-size: 21px; }
+    .onb-skip-link { top: 12px; right: 14px; }
+    .onb-actions-row { flex-direction: column; }
+    .onb-actions-row .onb-btn { width: 100%; }
+  }
+</style>
+
+<div id="onbOverlay" class="onb-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="onbTitle">
+  <div class="onb-card">
+    <a href="#" id="onbSkipBtn" class="onb-skip-link">Skip setup</a>
+    <div class="onb-progress-wrap">
+      <div class="onb-progress-bar"><div id="onbProgressFill" class="onb-progress-fill"></div></div>
+      <div class="onb-progress-meta">
+        <button type="button" id="onbBackBtn" class="onb-back-btn">← Back</button>
+        <span id="onbProgressLabel">Step 1 of 5</span>
+      </div>
+    </div>
+    <div id="onbBody" class="onb-body onb-fade-in"></div>
+  </div>
+</div>
+
+<!-- ====== MOBILE BOTTOM NAVIGATION ====== -->
+<nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
+  <a class="bottom-nav-item active" data-route="dashboard" role="button">
+    <span class="bn-icon">📊</span>
+    <span class="bn-label">Dashboard</span>
+  </a>
+  <a class="bottom-nav-item" data-route="accounts" role="button">
+    <span class="bn-icon">🔗</span>
+    <span class="bn-label">Accounts</span>
+  </a>
+  <a class="bottom-nav-item" data-route="trades" role="button">
+    <span class="bn-icon">📈</span>
+    <span class="bn-label">Trades</span>
+  </a>
+  <a class="bottom-nav-item" data-route="risk" role="button">
+    <span class="bn-icon">⚙️</span>
+    <span class="bn-label">Settings</span>
+  </a>
+  <a class="bottom-nav-item" data-route="support" role="button">
+    <span class="bn-icon">💬</span>
+    <span class="bn-label">Support</span>
+  </a>
+  <a class="bottom-nav-item admin-nav-item hidden" data-route="admin" id="bottomAdminNavItem" role="button">
+    <span class="bn-icon">🛠️</span>
+    <span class="bn-label">Admin</span>
+  </a>
+</nav>
+
 </body>
 </html>
