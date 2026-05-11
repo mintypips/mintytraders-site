@@ -978,6 +978,7 @@
     <a class="nav-item" data-route="trades"><span class="nav-icon">📈</span> Trade History</a>
     <a class="nav-item" data-route="risk"><span class="nav-icon">⚙️</span> Risk Settings</a>
     <a class="nav-item" data-route="strategies"><span class="nav-icon">🤖</span> Strategies</a>
+    <a class="nav-item" data-route="livebots"><span class="nav-icon">⚡</span> Live Bots</a>
     <a class="nav-item" data-route="billing"><span class="nav-icon">💳</span> Billing</a>
     <a class="nav-item" data-route="support"><span class="nav-icon">💬</span> Support</a>
     <a class="nav-item admin-nav-item hidden" data-route="admin" id="adminNavItem" style="margin-top:8px;border-top:1px solid rgba(123,47,255,0.3);padding-top:12px;color:#a78bfa;"><span class="nav-icon">🛠️</span> Admin</a>
@@ -1054,6 +1055,10 @@
           <option value="NQ">NQ — Nasdaq</option>
           <option value="YM">YM — Dow</option>
         </select>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <label style="font-size:11px;color:var(--text-dim);font-weight:600;">CONTRACTS</label>
+          <input id="manualQty" type="number" min="1" max="20" value="1" style="background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:14px;width:70px;text-align:center;font-weight:700;">
+        </div>
         <button onclick="manualTrade('LONG')" style="background:rgba(0,212,100,0.15);color:var(--mint);border:1px solid var(--mint);padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">▲ BUY</button>
         <button onclick="manualTrade('SHORT')" style="background:rgba(255,91,91,0.1);color:var(--red);border:1px solid var(--red);padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">▼ SELL</button>
         <button onclick="manualFlat()" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid var(--border);padding:9px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">FLAT</button>
@@ -1174,6 +1179,83 @@
       <div id="strategiesSaveMsg" style="margin-top:12px;color:var(--mint);display:none;">✅ Saved!</div>
     </div>
 
+    <!-- =============== LIVE BOTS =============== -->
+    <style>
+      .livebots-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:18px; }
+      @media (max-width: 900px) { .livebots-grid { grid-template-columns: 1fr; } }
+      .livebot-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px 20px;
+        position: relative;
+        overflow: hidden;
+      }
+      .livebot-card.offline { opacity: 0.65; border-color: rgba(255,91,91,0.35); }
+      .livebot-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; }
+      .livebot-title { font-size: 1.05rem; font-weight: 700; color: var(--text); display:flex; align-items:center; gap:8px; }
+      .livebot-sub { font-size: 0.72rem; color: var(--text-faint); margin-top: 2px; }
+      .livebot-pill {
+        display:inline-flex; align-items:center; gap:4px;
+        padding: 3px 10px; border-radius: 999px;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px;
+        background: rgba(255,255,255,0.05); color: var(--text-dim);
+      }
+      .livebot-pill.long  { background: rgba(0,212,100,0.15); color: var(--mint); border:1px solid rgba(0,212,100,0.3); }
+      .livebot-pill.short { background: rgba(255,91,91,0.15); color: var(--red);  border:1px solid rgba(255,91,91,0.3); }
+      .livebot-pill.flat  { background: rgba(255,255,255,0.04); color: var(--text-dim); border:1px solid var(--border); }
+      .livebot-pill.fire  { background: rgba(255,165,0,0.18); color: #ffb347; border:1px solid rgba(255,165,0,0.4); animation: pulseFire 1.5s infinite; }
+      @keyframes pulseFire { 0%,100% { box-shadow: 0 0 0 0 rgba(255,165,0,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,165,0,0); } }
+      .livebot-pill.offline-pill { background: rgba(255,91,91,0.12); color: var(--red); border:1px solid rgba(255,91,91,0.3); }
+      .livebot-row { display:flex; justify-content:space-between; align-items:center; padding: 7px 0; font-size: 0.88rem; }
+      .livebot-row + .livebot-row { border-top: 1px solid var(--border); }
+      .livebot-row .k { color: var(--text-dim); }
+      .livebot-row .v { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+      .v-pos { color: var(--mint) !important; }
+      .v-neg { color: var(--red) !important; }
+      .zbar {
+        position: relative; height: 8px; border-radius: 999px;
+        background: rgba(255,255,255,0.05); overflow: hidden; margin-top: 6px;
+      }
+      .zbar-mid { position:absolute; top:0; bottom:0; left:50%; width:1px; background: rgba(255,255,255,0.15); }
+      .zbar-fill { position:absolute; top:0; bottom:0; height:100%; transition: width .3s, left .3s; border-radius: 999px; }
+      .zbar-fill.pos { background: linear-gradient(90deg, rgba(0,212,100,0.5), var(--mint)); }
+      .zbar-fill.neg { background: linear-gradient(90deg, var(--red), rgba(255,91,91,0.5)); }
+      .scorebar { height: 10px; background: rgba(255,255,255,0.05); border-radius: 999px; overflow: hidden; margin-top: 6px; }
+      .scorebar-fill { height:100%; transition: width .3s, background .3s; border-radius: 999px; }
+      .cond-pills { display:flex; flex-wrap:wrap; gap:6px; margin-top: 8px; }
+      .cond-pill { font-size: 0.72rem; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.04); border:1px solid var(--border); color: var(--text-dim); }
+      .cond-pill.ok  { background: rgba(0,212,100,0.12);  color: var(--mint); border-color: rgba(0,212,100,0.3); }
+      .cond-pill.bad { background: rgba(255,91,91,0.10); color: var(--red);  border-color: rgba(255,91,91,0.25); }
+      .open-trade-box {
+        margin-top: 14px; padding: 12px; border-radius: 10px;
+        background: rgba(123,47,255,0.08);
+        border: 1px solid rgba(123,47,255,0.3);
+      }
+      .open-trade-box .ot-title { font-size: 0.72rem; color: #c4b3ff; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
+      .livebot-footer { display:flex; justify-content:space-between; margin-top: 14px; font-size: 0.7rem; color: var(--text-faint); }
+      .livebot-warn { margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: rgba(255,165,0,0.08); border:1px solid rgba(255,165,0,0.25); color:#ffb347; font-size: 0.78rem; }
+      .livebots-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; }
+      .livebots-status { font-size:0.78rem; color: var(--text-dim); }
+      .livebots-status .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+      .livebots-status .dot.live  { background: var(--mint); box-shadow: 0 0 8px var(--mint-glow); }
+      .livebots-status .dot.stale { background: #ffb347; }
+      .livebots-status .dot.off   { background: var(--red); }
+    </style>
+    <div class="page hidden" id="page-livebots">
+      <div class="page-header">
+        <div class="livebots-hdr">
+          <div>
+            <h1>⚡ Live Bots</h1>
+            <p>Real-time view of all 5 trading bots — pushed every 10s.</p>
+          </div>
+          <div class="livebots-status" id="livebotsStatus"><span class="dot off"></span>connecting…</div>
+        </div>
+      </div>
+      <div class="livebots-grid" id="livebotsGrid">
+        <div style="color:var(--text-dim);padding:40px;text-align:center;grid-column:1/-1;">Loading live bots…</div>
+      </div>
+    </div>
 
     <!-- =============== BILLING =============== -->
     <div class="page hidden" id="page-billing">
@@ -1510,6 +1592,11 @@
         ⚠️ Importing replaces your existing connected accounts with the ones in this payload.
       </p>
       <div style="margin-bottom:14px;">
+        <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">PMT Webhook URL</label>
+        <input id="updatePmtWebhook" type="text" autocomplete="off" placeholder="https://api.pickmytrade.trade/v2/add-trade-data-latest?t=12345" style="width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;" />
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">In PMT → Generate Alert → copy the Webhook URL (top right)</div>
+      </div>
+      <div style="margin-bottom:14px;">
         <label style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;">PMT Signal Code (JSON)</label>
         <textarea id="updatePmtPayload" rows="10" autocomplete="off" spellcheck="false"
           placeholder='{\n  "symbol": "ES1!",\n  "strategy_name": "MonaLiza",\n  "token": "...",\n  "multiple_accounts": [ ... ]\n}'
@@ -1820,6 +1907,8 @@
     document.getElementById('sidebar').classList.remove('open');
     try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (_) { window.scrollTo(0, 0); }
     if (route === 'strategies') loadStrategies();
+    if (route === 'livebots') startLiveBotsPolling();
+    else stopLiveBotsPolling();
   }
 
   // ============= MOBILE TOGGLE =============
@@ -2007,6 +2096,7 @@
         `<div style="text-align:center; padding:60px; color:var(--text-dim);">No accounts connected. Click "+ Add Account" to get started.</div>`;
       return;
     }
+    cachedAccounts.sort((a,b) => (a.account_id||a.id||'').localeCompare(b.account_id||b.id||''));
     const html = cachedAccounts.map((a, i) => {
       const status = (a.status || 'active').toLowerCase();
       const statusBadge = status === 'active' ? 'badge-active' : 'badge-paused';
@@ -2018,7 +2108,8 @@
       return `<div class="account-card">
         <div class="account-info">
           <div class="broker">${broker}</div>
-          <div class="id">${id}</div>
+          <div class="id" style="font-weight:700;font-size:13px;color:var(--text)">${id}</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${status.toUpperCase()}</div>
         </div>
         <div class="account-meta">
           <div>
@@ -2040,7 +2131,7 @@
       t.addEventListener('change', async (e) => {
         const id = e.target.dataset.id;
         const newStatus = e.target.checked ? 'active' : 'paused';
-        const r = await apiPost(`/api/accounts/${id}/status`, { status: newStatus });
+        const r = await apiPost(`/api/accounts/${id}/pause`, { status: newStatus });
         if (r.success) {
           showToast(`Account ${newStatus === 'active' ? 'resumed' : 'paused'} ✓`);
           loadAccounts();
@@ -2332,6 +2423,9 @@
       const prevLabel = submitUpdatePmtBtnEl.textContent;
       submitUpdatePmtBtnEl.textContent = 'Importing…';
       try {
+      // Attach webhook URL if provided
+      const wh = (document.getElementById('updatePmtWebhook')?.value || '').trim();
+      if (wh) parsed._webhook_url = wh;
         const r = await apiPost('/api/accounts/import-pmt', parsed);
         if (r && r.success) {
           const count = r.data?.count ?? ids.length;
@@ -2780,11 +2874,12 @@
   // ============= MANUAL TRADE =============
   async function manualTrade(direction) {
     const symbol = document.getElementById('manualSymbol').value;
+    const qty = parseInt(document.getElementById('manualQty').value) || 1;
     const status = document.getElementById('manualTradeStatus');
     status.textContent = 'Sending…'; status.style.color = 'var(--text-dim)';
-    const r = await apiPost('/api/accounts/fire', { direction, symbol });
+    const r = await apiPost('/api/accounts/fire', { direction, symbol, quantity: qty });
     if (r.success || r.fired >= 0) {
-      status.textContent = `✅ ${direction} ${symbol} sent to ${r.fired || 1} account(s)`;
+      status.textContent = `✅ ${direction} ${qty}x ${symbol} sent to ${r.fired || 1} account(s)`;
       status.style.color = 'var(--mint)';
     } else {
       status.textContent = r.error || 'Failed';
@@ -3267,6 +3362,13 @@
         </ol>
         <div class="onb-form">
           <div class="onb-field">
+            <label for="onbWebhookUrl">PMT Webhook URL</label>
+            <input id="onbWebhookUrl" type="text" autocomplete="off" spellcheck="false" placeholder="https://api.pickmytrade.trade/v2/add-trade-data-latest?t=12345" style="width:100%;font-size:13px;" />
+            <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">In PMT → Generate Alert → copy the Webhook URL (top right)</div>
+          </div>
+          <div class="onb-field" style="margin-top:12px;">
+            <label for="onbPmtPayload">PMT Signal Code (JSON)</label>
+          <div class="onb-field">
             <label for="onbPmtPayload">PMT Signal Code (JSON)</label>
             <textarea id="onbPmtPayload" rows="8" autocomplete="off" spellcheck="false" placeholder='{\n  "symbol": "ES1!",\n  "strategy_name": "MonaLiza",\n  "token": "...",\n  "multiple_accounts": [ ... ]\n}' style="width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;background:var(--bg-3,#0f1115);color:var(--text,#e6e7ea);border:1px solid var(--border,#2a2d33);border-radius:8px;padding:10px 12px;resize:vertical;"></textarea>
           </div>
@@ -3362,6 +3464,10 @@
           const prevLabel = validateBtn.textContent;
           validateBtn.textContent = 'Importing…';
           try {
+            // Attach webhook URL if provided
+            const webhookUrlEl = document.getElementById('onbWebhookUrl');
+            const webhookUrlVal = (webhookUrlEl?.value || '').trim();
+            if (webhookUrlVal) parsed._webhook_url = webhookUrlVal;
             const r = await apiPost('/api/accounts/import-pmt', parsed);
             if (r && r.success) {
               const count = r.data?.count ?? ids.length;
@@ -3554,6 +3660,264 @@
       if (msg) { msg.style.display = ''; setTimeout(() => msg.style.display = 'none', 3000); }
     }
   });
+
+  // ============= LIVE BOTS =============
+  let _livebotsTimer = null;
+
+  function startLiveBotsPolling() {
+    if (_livebotsTimer) return;
+    loadLiveBots();
+    _livebotsTimer = setInterval(loadLiveBots, 5000);
+  }
+  function stopLiveBotsPolling() {
+    if (_livebotsTimer) { clearInterval(_livebotsTimer); _livebotsTimer = null; }
+  }
+
+  async function loadLiveBots() {
+    const grid = document.getElementById('livebotsGrid');
+    const status = document.getElementById('livebotsStatus');
+    if (!grid) return;
+    const result = await apiGet('/api/bots/live');
+    if (!result.success || !result.data) {
+      grid.innerHTML = `<div style="color:var(--red);padding:40px;text-align:center;grid-column:1/-1;">Failed to load: ${result.error || 'unknown error'}</div>`;
+      if (status) status.innerHTML = '<span class="dot off"></span>error';
+      return;
+    }
+    const d = result.data;
+    if (status) {
+      const ageMs = d.received_at ? (Date.now() - new Date(d.received_at).getTime()) : null;
+      let dotCls = 'off', text = 'no data';
+      if (ageMs != null) {
+        if (ageMs < 15000) { dotCls = 'live'; text = `live — last push ${Math.round(ageMs/1000)}s ago`; }
+        else if (ageMs < 60000) { dotCls = 'stale'; text = `stale — ${Math.round(ageMs/1000)}s ago`; }
+        else { dotCls = 'off'; text = `offline — ${Math.round(ageMs/1000)}s ago`; }
+      }
+      status.innerHTML = `<span class="dot ${dotCls}"></span>${text}`;
+    }
+    grid.innerHTML = '';
+    grid.appendChild(renderIcebergCard(d.iceberg));
+    grid.appendChild(renderConfluenceCard(d.confluence));
+    grid.appendChild(renderDarkpoolCard(d.darkpool));
+    grid.appendChild(renderVwapCard(d.vwap));
+    grid.appendChild(renderClCard(d.cl));
+  }
+
+  // ---- helpers ----
+  function _biasPill(bias) {
+    const b = String(bias || 'FLAT').toUpperCase();
+    const cls = b === 'LONG' ? 'long' : b === 'SHORT' ? 'short' : 'flat';
+    return `<span class="livebot-pill ${cls}">${b}</span>`;
+  }
+  function _zbar(z) {
+    if (z == null || isNaN(z)) return '<div class="zbar"><div class="zbar-mid"></div></div>';
+    const clamped = Math.max(-3, Math.min(3, Number(z)));
+    const pct = Math.abs(clamped) / 3 * 50; // 0..50
+    const cls = clamped >= 0 ? 'pos' : 'neg';
+    const left = clamped >= 0 ? 50 : 50 - pct;
+    return `<div class="zbar"><div class="zbar-mid"></div><div class="zbar-fill ${cls}" style="left:${left}%;width:${pct}%;"></div></div>`;
+  }
+  function _fmtNum(n, digits = 2) {
+    if (n == null || isNaN(n)) return '—';
+    return Number(n).toFixed(digits);
+  }
+  function _fmtSigned(n, digits = 2) {
+    if (n == null || isNaN(n)) return '—';
+    const v = Number(n);
+    return (v >= 0 ? '+' : '') + v.toFixed(digits);
+  }
+  function _pnlClass(n) { if (n == null || isNaN(n)) return ''; return Number(n) >= 0 ? 'v-pos' : 'v-neg'; }
+  function _offlineCard(title, emoji, sub) {
+    const card = document.createElement('div');
+    card.className = 'livebot-card offline';
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">${emoji} ${title}</div>
+          <div class="livebot-sub">${sub || ''}</div>
+        </div>
+        <span class="livebot-pill offline-pill">🔴 OFFLINE</span>
+      </div>
+      <div style="color:var(--text-dim);font-size:0.85rem;padding:14px 0;">No data received from bot.</div>`;
+    return card;
+  }
+  function _footer(updatedAt) {
+    const t = updatedAt ? new Date(updatedAt).toLocaleTimeString() : '—';
+    return `<div class="livebot-footer"><span></span><span>updated ${t}</span></div>`;
+  }
+  function _openTradeBox(t, currentPrice) {
+    if (!t) return '';
+    const entry = t.entry ?? t.entry_price ?? null;
+    const dir = (t.direction || '').toUpperCase();
+    let pnl = t.unrealized_pnl ?? t.pnl ?? null;
+    if (pnl == null && entry != null && currentPrice != null && dir) {
+      pnl = (currentPrice - entry) * (dir === 'LONG' ? 1 : -1);
+    }
+    return `
+      <div class="open-trade-box">
+        <div class="ot-title">📖 OPEN TRADE — ${dir || '?'}</div>
+        <div class="livebot-row"><span class="k">Entry</span><span class="v">${_fmtNum(entry)}</span></div>
+        <div class="livebot-row"><span class="k">Unrealized PnL</span><span class="v ${_pnlClass(pnl)}">${_fmtSigned(pnl)} pts</span></div>
+      </div>`;
+  }
+
+  // ---- Iceberg card ----
+  function renderIcebergCard(s) {
+    if (!s || s.error) return _offlineCard('Iceberg Bot', '🧊', 'ES — dark pool + Bookmap');
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+    const aboveVwap = s.price_above_vwap;
+    const vwapInd = aboveVwap == null ? '—' : (aboveVwap ? '<span class="v-pos">▲ above</span>' : '<span class="v-neg">▼ below</span>');
+    const pnl = s.daily_pnl_pts ?? s.pnl_today ?? s.today_pnl_pts ?? null;
+    const tradesToday = s.trades_today ?? s.trades_fired ?? 0;
+    const maxTrades = s.max_trades ?? s.max_trades_per_day ?? null;
+    const maxReached = maxTrades != null && tradesToday >= maxTrades;
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">🧊 Iceberg Bot</div>
+          <div class="livebot-sub">ES — dark pool z-score + Bookmap icebergs</div>
+        </div>
+        ${_biasPill(s.bias)}
+      </div>
+      <div class="livebot-row"><span class="k">Z-score</span><span class="v">${_fmtNum(s.z_score)}</span></div>
+      ${_zbar(s.z_score)}
+      <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(s.es_price)}</span></div>
+      <div class="livebot-row"><span class="k">VWAP</span><span class="v">${_fmtNum(s.vwap)} · ${vwapInd}</span></div>
+      <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesToday}${maxTrades != null ? ' / ' + maxTrades : ''}</span></div>
+      <div class="livebot-row"><span class="k">Daily PnL</span><span class="v ${_pnlClass(pnl)}">${pnl == null ? '—' : _fmtSigned(pnl) + ' pts'}</span></div>
+      ${maxReached ? '<div class="livebot-warn">⚠️ Max trades reached — no new entries today.</div>' : ''}
+      ${_openTradeBox(s.open_trade, s.es_price)}
+      ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  // ---- Confluence card ----
+  function renderConfluenceCard(s) {
+    if (!s || s.error) return _offlineCard('Confluence Bot', '🔥', 'ES — multi-signal scoring');
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+    const score = Number(s.score ?? 0);
+    const max = Number(s.score_max ?? 7);
+    const pct = Math.max(0, Math.min(100, (score / max) * 100));
+    const barColor = score >= max ? 'var(--mint)' : score >= 4 ? '#ffb347' : 'var(--red)';
+    const firing = score >= max;
+    const conds = s.conditions || s.checks || {};
+    const condEntries = [
+      ['dark_pool', 'dark_pool'],
+      ['vwap', 'vwap'],
+      ['uw_activity', 'uw_activity'],
+      ['iceberg_cluster', 'iceberg_cluster'],
+      ['rsi', 'rsi'],
+    ];
+    const condHtml = condEntries.map(([label, key]) => {
+      const v = conds[key];
+      const ok = !!v;
+      return `<span class="cond-pill ${ok ? 'ok' : 'bad'}">${ok ? '✅' : '❌'} ${label}</span>`;
+    }).join('');
+    const longReqs = s.long_hard_reqs_met ?? s.long_ready ?? null;
+    const shortReqs = s.short_hard_reqs_met ?? s.short_ready ?? null;
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">🔥 Confluence Bot</div>
+          <div class="livebot-sub">ES — multi-signal score</div>
+        </div>
+        ${firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(s.bias)}
+      </div>
+      <div class="livebot-row"><span class="k">Score</span><span class="v">${score} / ${max}</span></div>
+      <div class="scorebar"><div class="scorebar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+      <div class="cond-pills">${condHtml}</div>
+      ${longReqs != null || shortReqs != null ? `
+        <div class="livebot-row"><span class="k">Long hard reqs</span><span class="v ${longReqs ? 'v-pos' : 'v-neg'}">${longReqs ? '✅ met' : '❌ not met'}</span></div>
+        <div class="livebot-row"><span class="k">Short hard reqs</span><span class="v ${shortReqs ? 'v-pos' : 'v-neg'}">${shortReqs ? '✅ met' : '❌ not met'}</span></div>` : ''}
+      ${_openTradeBox(s.open_trade, s.es_price)}
+      ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  // ---- Darkpool card ----
+  function renderDarkpoolCard(s) {
+    if (!s || s.error) return _offlineCard('DarkPool OTC', '🌑', 'ES — fires once at 8:30 CT');
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+    const entrySent = s.entry_sent_today ?? s.entry_sent ?? false;
+    const eodSent = s.eod_sent_today ?? s.eod_sent ?? false;
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">🌑 DarkPool OTC</div>
+          <div class="livebot-sub">ES — dark pool z-score, single shot</div>
+        </div>
+        ${_biasPill(s.bias)}
+      </div>
+      <div class="livebot-row"><span class="k">Z-score</span><span class="v">${_fmtNum(s.z_score)}</span></div>
+      ${_zbar(s.z_score)}
+      <div class="livebot-row"><span class="k">Entry sent today</span><span class="v ${entrySent ? 'v-pos' : ''}">${entrySent ? '✅ fired' : '⏳ pending (8:30 CT)'}</span></div>
+      <div class="livebot-row"><span class="k">EOD close sent</span><span class="v ${eodSent ? 'v-pos' : ''}">${eodSent ? '✅ sent' : '⏳ pending'}</span></div>
+      ${_openTradeBox(s.open_trade, s.es_price)}
+      ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  // ---- VWAP Reclaim card ----
+  function renderVwapCard(s) {
+    if (!s || s.error) return _offlineCard('VWAP Reclaim', '📈', 'ES — pre-market reclaim');
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+    const ct = ctNow();
+    const inWindow = (ct.h > 5 || (ct.h === 5 && ct.m >= 0)) && (ct.h < 8 || (ct.h === 8 && ct.m < 30));
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">📈 VWAP Reclaim</div>
+          <div class="livebot-sub">ES — 5:00–8:30 AM CT window</div>
+        </div>
+        ${_biasPill(s.bias)}
+      </div>
+      <div class="livebot-row"><span class="k">Z-score</span><span class="v">${_fmtNum(s.z_score)}</span></div>
+      ${_zbar(s.z_score)}
+      <div class="livebot-row"><span class="k">Pre-market window</span><span class="v ${inWindow ? 'v-pos' : ''}">${inWindow ? '🟢 active' : '⏳ closed'}</span></div>
+      <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(s.es_price)}</span></div>
+      ${_openTradeBox(s.open_trade, s.es_price)}
+      ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  // ---- CL card ----
+  function renderClCard(s) {
+    if (!s || s.error) return _offlineCard('CL Bot', '🛢️', 'CL — opening range trend');
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+    const aboveVwap = s.price_above_vwap;
+    const vwapInd = aboveVwap == null ? '—' : (aboveVwap ? '<span class="v-pos">▲ above</span>' : '<span class="v-neg">▼ below</span>');
+    const orComplete = s.or_complete ?? s.opening_range_complete ?? null;
+    const orDir = s.or_direction ?? s.opening_range_direction ?? null;
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">🛢️ CL Bot</div>
+          <div class="livebot-sub">Crude oil — opening range + trend</div>
+        </div>
+        ${_biasPill(orDir || s.bias)}
+      </div>
+      <div class="livebot-row"><span class="k">CL Price</span><span class="v">${_fmtNum(s.cl_price ?? s.price)}</span></div>
+      <div class="livebot-row"><span class="k">VWAP</span><span class="v">${_fmtNum(s.vwap)} · ${vwapInd}</span></div>
+      <div class="livebot-row"><span class="k">Opening range</span><span class="v ${orComplete ? 'v-pos' : ''}">${orComplete == null ? '—' : (orComplete ? '✅ complete' : '🔨 building')}</span></div>
+      <div class="livebot-row"><span class="k">OR direction</span><span class="v">${orDir || '—'}</span></div>
+      ${_openTradeBox(s.open_trade, s.cl_price ?? s.price)}
+      ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  function ctNow() {
+    // Approximate CT hour/minute from browser's local time — use Intl to be safe.
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: 'numeric', hour12: false }).formatToParts(new Date());
+      const h = parseInt(parts.find(p => p.type === 'hour').value, 10);
+      const m = parseInt(parts.find(p => p.type === 'minute').value, 10);
+      return { h, m };
+    } catch (_) { const d = new Date(); return { h: d.getHours(), m: d.getMinutes() }; }
+  }
 
 </script>
 
@@ -3870,6 +4234,10 @@
   <a class="bottom-nav-item" data-route="trades" role="button">
     <span class="bn-icon">📈</span>
     <span class="bn-label">Trades</span>
+  </a>
+  <a class="bottom-nav-item" data-route="strategies" role="button">
+    <span class="bn-icon">🤖</span>
+    <span class="bn-label">Strategies</span>
   </a>
   <a class="bottom-nav-item" data-route="risk" role="button">
     <span class="bn-icon">⚙️</span>
