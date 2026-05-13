@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MintyTraders Mentorship — Build Your Own 6-Figure AI Trading Service</title>
+<meta name="description" content="Layth Banks built a 6-figure AI futures trading signal service. Now he'll teach you how to build yours in 4 weeks. $5,000 mentorship — limited seats." />
+<meta property="og:title" content="MintyTraders Mentorship — Build Your Own AI Trading Service" />
+<meta property="og:description" content="4 weeks. Your own signal bot, dashboard, and first paying clients. $5,000 one-time." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- Reset & base ---------- */
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #ffffff;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(0,229,204,0.08), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(192,132,252,0.08), transparent 45%);
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+
+  :root {
+    --mint: #40d8c0;
+    --purple: #9040f0;
+    --gold: #f5c842;
+    --bg: #0a0a0f;
+    --card: #111118;
+    --card-2: #161620;
+    --border: rgba(255,255,255,0.08);
+    --text-dim: rgba(255,255,255,0.65);
+    --text-mute: rgba(255,255,255,0.45);
+    --grad: linear-gradient(90deg, #40d8c0, #c8a828, #b060e0, #9040f0);
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--grad);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 15px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    box-shadow: 0 8px 24px rgba(0,229,204,0.18), 0 4px 16px rgba(192,132,252,0.18);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,229,204,0.28), 0 6px 22px rgba(192,132,252,0.28);
+    filter: brightness(1.05);
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: none;
+  }
+  .btn-outline:hover {
+    border-color: rgba(64,216,192,0.55);
+    background: rgba(255,255,255,0.03);
+    box-shadow: none;
+    filter: none;
+  }
+  .btn-lg { padding: 18px 38px; font-size: 17px; }
+  .btn-xl { padding: 22px 48px; font-size: 18px; }
+
+  .gradient-text {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(10,10,15,0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
+  .logo-wrap { position: relative; display: inline-flex; flex-direction: column; align-items: flex-start; }
+  .logo { font-weight: 900; font-size: 22px; letter-spacing: 1px; line-height: 1; }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; padding: 100px 0 80px; overflow: hidden; text-align: center; }
+  #particles { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .hero-inner { position: relative; z-index: 2; max-width: 980px; margin: 0 auto; }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid rgba(64,216,192,0.35);
+    background: rgba(64,216,192,0.08);
+    border-radius: 999px;
+    font-size: 13px; font-weight: 600;
+    color: #d4fffb; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #40d8c0; box-shadow: 0 0 10px #40d8c0;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1);} 50% { opacity: 0.5; transform: scale(0.85);} }
+
+  .hero h1 {
+    margin-top: 22px;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 .accent {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p.sub {
+    margin: 24px auto 0;
+    color: var(--text-dim);
+    font-size: clamp(16px, 1.6vw, 19px);
+    max-width: 780px;
+  }
+  .hero-cta-wrap {
+    margin-top: 38px;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 14px;
+  }
+  .hero-meta {
+    margin-top: 20px;
+    color: var(--text-mute);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Sections ---------- */
+  section.block { padding: 100px 0; position: relative; z-index: 2; }
+  .section-head { text-align: center; max-width: 760px; margin: 0 auto 56px; }
+  .section-head h2 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .section-head p { color: var(--text-dim); margin-top: 14px; font-size: 17px; }
+
+  /* ---------- Proof / stat cards ---------- */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .stat-card {
+    position: relative;
+    padding: 32px 28px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: transform 0.25s ease;
+  }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: 0 18px 48px rgba(0,229,204,0.10), 0 18px 48px rgba(192,132,252,0.10); }
+  .stat-value {
+    font-size: clamp(30px, 3.5vw, 44px);
+    font-weight: 900;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    margin-top: 10px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .stat-desc {
+    margin-top: 6px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* ---------- What You'll Build (deliverables) ---------- */
+  .deliverable-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .deliverable {
+    padding: 30px 26px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+  .deliverable:hover { transform: translateY(-4px); border-color: rgba(64,216,192,0.35); }
+  .deliverable-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: var(--grad);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 6px 20px rgba(64,216,192,0.25);
+    margin-bottom: 18px;
+  }
+  .deliverable h3 { font-size: 19px; font-weight: 800; margin-bottom: 10px; }
+  .deliverable p { color: var(--text-dim); font-size: 15px; }
+
+  /* ---------- Curriculum (weeks) ---------- */
+  .weeks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+  .week-card {
+    padding: 32px 28px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+  .week-card:hover { transform: translateY(-4px); border-color: rgba(64,216,192,0.35); }
+  .week-num {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(64,216,192,0.12);
+    color: var(--mint);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .week-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 14px; }
+  .week-card ul { list-style: none; padding: 0; }
+  .week-card li {
+    color: var(--text-dim);
+    font-size: 15px;
+    padding: 6px 0 6px 22px;
+    position: relative;
+  }
+  .week-card li::before {
+    content: '→';
+    color: var(--mint);
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+  }
+  .week-card .deliverable-tag {
+    margin-top: 18px;
+    padding: 12px 14px;
+    background: rgba(64,216,192,0.06);
+    border: 1px solid rgba(64,216,192,0.18);
+    border-radius: 10px;
+    color: #d4fffb;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* ---------- Included (checklist) ---------- */
+  .included-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .included-item {
+    padding: 18px 22px;
+    border-radius: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .included-check {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--grad);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #0a0a0f;
+    font-weight: 900;
+    font-size: 14px;
+  }
+  .included-item .text strong { display: block; font-size: 16px; margin-bottom: 4px; }
+  .included-item .text p { color: var(--text-dim); font-size: 14px; }
+
+  /* ---------- For / Not For ---------- */
+  .for-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  .for-card {
+    padding: 32px 28px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .for-card.yes { border-color: rgba(64,216,192,0.35); }
+  .for-card.no { border-color: rgba(255,139,139,0.25); }
+  .for-card h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 20px;
+  }
+  .for-card.yes h3 { color: var(--mint); }
+  .for-card.no h3 { color: #ff8b8b; }
+  .for-card ul { list-style: none; padding: 0; }
+  .for-card li {
+    padding: 10px 0 10px 28px;
+    color: var(--text-dim);
+    position: relative;
+    font-size: 15px;
+    border-top: 1px solid var(--border);
+  }
+  .for-card li:first-child { border-top: none; }
+  .for-card.yes li::before {
+    content: '✓';
+    color: var(--mint);
+    position: absolute;
+    left: 0;
+    font-weight: 900;
+    font-size: 17px;
+  }
+  .for-card.no li::before {
+    content: '✕';
+    color: #ff8b8b;
+    position: absolute;
+    left: 0;
+    font-weight: 900;
+    font-size: 17px;
+  }
+
+  /* ---------- Investment / Pricing card ---------- */
+  .price-card {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 44px;
+    border-radius: 22px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .price-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 22px;
+    padding: 1px;
+    background: var(--grad);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+  .price-tag {
+    font-size: clamp(48px, 7vw, 80px);
+    font-weight: 900;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .price-sub {
+    color: var(--text-dim);
+    font-size: 16px;
+    margin-top: 12px;
+  }
+  .price-list {
+    margin: 32px auto;
+    text-align: left;
+    max-width: 480px;
+    list-style: none;
+    padding: 0;
+  }
+  .price-list li {
+    padding: 10px 0 10px 28px;
+    color: var(--text-dim);
+    font-size: 15px;
+    position: relative;
+    border-top: 1px solid var(--border);
+  }
+  .price-list li:first-child { border-top: none; }
+  .price-list li::before {
+    content: '✓';
+    color: var(--mint);
+    position: absolute;
+    left: 0;
+    font-weight: 900;
+    font-size: 17px;
+  }
+  .price-note {
+    color: var(--text-mute);
+    font-size: 13px;
+    margin-top: 18px;
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-list { max-width: 820px; margin: 0 auto; }
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .faq-item summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 22px 0;
+    font-size: 17px;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: '+';
+    color: var(--mint);
+    font-size: 24px;
+    font-weight: 400;
+    transition: transform 0.2s ease;
+  }
+  .faq-item[open] summary::after { transform: rotate(45deg); }
+  .faq-item .faq-body {
+    padding: 0 0 22px;
+    color: var(--text-dim);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ---------- Final CTA ---------- */
+  .final-cta {
+    padding: 100px 0;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+  .final-cta h2 {
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .final-cta h2 .accent {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .final-cta p {
+    color: var(--text-dim);
+    margin: 18px auto 36px;
+    font-size: 18px;
+    max-width: 640px;
+  }
+
+  /* ---------- Footer ---------- */
+  footer {
+    padding: 60px 0 40px;
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 2;
+  }
+  .foot-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  .foot-links { display: flex; gap: 22px; flex-wrap: wrap; }
+  .foot-links a { color: var(--text-dim); font-size: 14px; }
+  .foot-links a:hover { color: var(--mint); }
+  .foot-meta {
+    margin-top: 32px;
+    text-align: center;
+    color: var(--text-mute);
+    font-size: 13px;
+  }
+  .risk {
+    margin-top: 20px;
+    color: var(--text-mute);
+    font-size: 11px;
+    line-height: 1.7;
+    max-width: 1000px;
+  }
+
+  /* ---------- Reveal animation ---------- */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 860px) {
+    .stat-grid, .deliverable-grid, .weeks, .included-grid, .for-grid {
+      grid-template-columns: 1fr;
+    }
+    section.block { padding: 70px 0; }
+    .hero { padding: 70px 0 60px; }
+    .price-card { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <div class="logo-wrap">
+      <a href="/">
+        <div class="logo">
+          <img src="logo.jpg" alt="MintyTraders" style="height:48px; width:auto; object-fit:contain;">
+        </div>
+      </a>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <a href="/" style="color:var(--text-dim);font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">← Back to MintyTraders</a>
+      <a href="#apply" class="btn">Apply Now</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <canvas id="particles"></canvas>
+  <div class="container hero-inner">
+    <span class="live-pill"><span class="live-dot"></span>Cohort Open — Limited Seats</span>
+    <h1>I Built a 6-Figure <span class="accent">AI Trading Service.</span><br/>Now I'll Help You Build Yours.</h1>
+    <p class="sub">A 4-week, hands-on mentorship that ends with your own signal bot, your own dashboard, and your first paying clients. Not a course. A build-out.</p>
+
+    <div class="hero-cta-wrap">
+      <a href="#apply" class="btn btn-xl">Apply for the Mentorship</a>
+      <a href="#curriculum" class="btn btn-xl btn-outline">See the Curriculum</a>
+    </div>
+
+    <div class="hero-meta">$5,000 one-time · 4 weeks · 1-on-1 with Layth</div>
+  </div>
+</header>
+
+<!-- ============ PROOF ============ -->
+<section class="block" id="proof">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>This Isn't Theory. It's What I'm Actually Running.</h2>
+      <p>The mentorship teaches you to build the same system I'm running right now at MintyTraders. Here are the receipts.</p>
+    </div>
+
+    <div class="stat-grid reveal">
+      <div class="stat-card">
+        <div class="stat-value">$22,175</div>
+        <div class="stat-label">Day 1 Live P&amp;L</div>
+        <div class="stat-desc">2 trades. 100% win rate. Real money, real fills, real broker statements.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">14+</div>
+        <div class="stat-label">Active Client Accounts</div>
+        <div class="stat-desc">Currently copy-trading the MintyTraders signal service across multiple prop firms.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">$2,500 + $100/mo</div>
+        <div class="stat-label">Per-Client Pricing</div>
+        <div class="stat-desc">The exact pricing model you'll learn to replicate. Setup fee + recurring MRR.</div>
+      </div>
+    </div>
+
+    <p class="risk" style="margin-top:32px; text-align:center;">Past performance is not indicative of future results. Your results will depend on your execution. See full risk disclaimer below.</p>
+  </div>
+</section>
+
+<!-- ============ WHAT YOU'LL BUILD ============ -->
+<section class="block" id="build">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>What You'll Walk Away With</h2>
+      <p>Not slides. Not PDFs. Actual working assets that generate revenue.</p>
+    </div>
+
+    <div class="deliverable-grid reveal">
+      <div class="deliverable">
+        <div class="deliverable-icon">🤖</div>
+        <h3>Your Own Signal Bot</h3>
+        <p>A live, automated bot running your backtested strategy on real institutional data — based on the same iceberg/VWAP-reclaim architecture I run.</p>
+      </div>
+      <div class="deliverable">
+        <div class="deliverable-icon">📊</div>
+        <h3>Client Dashboard</h3>
+        <p>A deployed, branded dashboard where clients log in, see live signals, and watch their equity curve grow. Mobile-ready, hosted on your domain.</p>
+      </div>
+      <div class="deliverable">
+        <div class="deliverable-icon">🔗</div>
+        <h3>Prop Firm Integration</h3>
+        <p>Copy trading connected to Apex / Tradovate / Rithmic accounts via PMT — so your signals execute automatically in client accounts.</p>
+      </div>
+      <div class="deliverable">
+        <div class="deliverable-icon">📈</div>
+        <h3>A Backtested Edge</h3>
+        <p>At least one strategy with PF &gt; 2.0, max drawdown ≤ 10%, validated over 12+ months of Databento tick data. Walk-forward verified.</p>
+      </div>
+      <div class="deliverable">
+        <div class="deliverable-icon">💬</div>
+        <h3>Sales Playbook</h3>
+        <p>The exact Instagram funnel, DM scripts, and close framework I use. You'll know how to take a stranger to a paying client in &lt;7 days.</p>
+      </div>
+      <div class="deliverable">
+        <div class="deliverable-icon">💵</div>
+        <h3>Your First Paying Clients</h3>
+        <p>You sign 1–3 clients before graduation. If you don't, we keep working until you do. That's the deal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CURRICULUM ============ -->
+<section class="block" id="curriculum">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>The 4-Week Build</h2>
+      <p>Each week ends with a real deliverable you can point to. No filler. No fluff.</p>
+    </div>
+
+    <div class="weeks reveal">
+      <div class="week-card">
+        <span class="week-num">Week 1 · Foundation</span>
+        <h3>AI Cockpit + Market Mechanics</h3>
+        <ul>
+          <li>Install OpenClaw + Claude, personalized to your workflow</li>
+          <li>Master ES, NQ, CL futures mechanics</li>
+          <li>Read dark pool prints and institutional flow</li>
+          <li>Wire up Unusual Whales + Databento data feeds</li>
+        </ul>
+        <div class="deliverable-tag">✓ Deliverable: Functioning AI cockpit + 6 months of ES tick data live in your environment</div>
+      </div>
+
+      <div class="week-card">
+        <span class="week-num">Week 2 · Strategy</span>
+        <h3>Build a Validated Trading Edge</h3>
+        <ul>
+          <li>Translate market observations into testable rules</li>
+          <li>Write your first Python backtest (with AI help)</li>
+          <li>Iterate without overfitting — walk-forward validation</li>
+          <li>Define the metrics that actually matter (PF, DD, Sharpe)</li>
+        </ul>
+        <div class="deliverable-tag">✓ Deliverable: At least one strategy with PF &gt; 2.0 documented over 12+ months</div>
+      </div>
+
+      <div class="week-card">
+        <span class="week-num">Week 3 · Service</span>
+        <h3>Bot, Dashboard, Copy Trading</h3>
+        <ul>
+          <li>Deploy your signal bot (24/7 or RTH)</li>
+          <li>Build and host your client dashboard</li>
+          <li>Connect prop firm accounts via PMT / MintyTraders</li>
+          <li>2-week paper trading window before going live</li>
+        </ul>
+        <div class="deliverable-tag">✓ Deliverable: Live bot + deployed dashboard + connected prop firm account</div>
+      </div>
+
+      <div class="week-card">
+        <span class="week-num">Week 4 · Clients</span>
+        <h3>Sign Your First Paying Clients</h3>
+        <ul>
+          <li>Lock in your pricing ($2,500 setup + $100/mo model)</li>
+          <li>Run the Instagram funnel — content → DM → close</li>
+          <li>Day-to-day ops without burnout</li>
+          <li>The roadmap from 1 client to 10+ MRR clients</li>
+        </ul>
+        <div class="deliverable-tag">✓ Deliverable: 1–3 paying clients signed (or we keep working until they are)</div>
+      </div>
+    </div>
+
+    <p style="text-align:center; margin-top:36px; color:var(--text-dim); font-size:15px;">
+      Want the full curriculum breakdown? <a href="/mentorship-curriculum.md" style="color:var(--mint); font-weight:600;">View the detailed outline →</a>
+    </p>
+  </div>
+</section>
+
+<!-- ============ WHAT'S INCLUDED ============ -->
+<section class="block" id="included">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>What's Included</h2>
+      <p>Everything you need to go from zero to live service. Nothing held back.</p>
+    </div>
+
+    <div class="included-grid reveal">
+      <div class="included-item">
+        <div class="included-check">✓</div>
+        <div class="text">
+          <strong>OpenClaw + AI Assistant Setup</strong>
+          <p>Personal install help — we set it up together on your machine, end-to-end.</p>
+        </div>
+      </div>
+      <div class="included-item">
+        <div class="included-check">✓</div>
+        <div class="text">
+          <strong>Strategy Development</strong>
+          <p>1-on-1 backtesting sessions until you have a strategy you'd put real money on.</p>
+        </div>
+      </div>
+      <div class="included-item">
+        <div class="included-check">✓</div>
+        <div class="text">
+          <strong>Signal Bot Source Code</strong>
+          <p>My iceberg / VWAP reclaim bot architecture, adapted to your strategy.</p>
+        </div>
+      </div>
+      <div class="included-item">
+        <div class="included-check">✓</div>
+        <div class="text">
+          <strong>Client Dashboard Template</strong>
+          <p>Branded dashboard you can deploy to your own domain on day one.</p>
+        </div>
+      </div>
+      <div class="included-item">
+        <div class="included-check">✓</div>
+        <div class="text">
+          <strong>Prop Firm + PMT Integration</strong>
+          <p>I walk you through connecting Apex / Tradovate / Rithmic for copy trading.</p>
+        </div>
+      </div>
+      <div class="included-item">
+        <div class="included-check">✓</div>
+        <div class="text">
+          <strong>Client Acquisition Playbook</strong>
+          <p>Instagram funnel, DM scripts, sales call framework, objection handlers.</p>
+        </div>
+      </div>
+      <div class="included-item">
+        <div class="included-check">✓</div>
+        <div class="text">
+          <strong>30 Days Post-Program Support</strong>
+          <p>Weekly office hours and direct Telegram access during your first live month.</p>
+        </div>
+      </div>
+      <div class="included-item">
+        <div class="included-check">✓</div>
+        <div class="text">
+          <strong>Lifetime Discord Access</strong>
+          <p>Graduates-only channel + quarterly strategy huddles. Free for life.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOR / NOT FOR ============ -->
+<section class="block" id="fit">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Let's Be Direct About Fit</h2>
+      <p>This isn't for everyone. Be honest with yourself before you apply.</p>
+    </div>
+
+    <div class="for-grid reveal">
+      <div class="for-card yes">
+        <h3>This is for you if…</h3>
+        <ul>
+          <li>You can commit 10–15 hours/week for 4 weeks</li>
+          <li>You're comfortable running commands on a computer (no coding required)</li>
+          <li>You have $3K+ working capital outside the program (data feeds, prop firm fees)</li>
+          <li>You're willing to show up publicly — your face, your name, your service</li>
+          <li>You want a real business, not a passive income button</li>
+          <li>You execute when given a plan — you don't need to be hand-held</li>
+        </ul>
+      </div>
+      <div class="for-card no">
+        <h3>This is NOT for you if…</h3>
+        <ul>
+          <li>You want a "set it and forget it" income stream</li>
+          <li>You can't separate trading your own account from running a service</li>
+          <li>You think 4 weeks is too long to wait for revenue</li>
+          <li>You're going to ghost the program and ask for a refund</li>
+          <li>You can't be coached — you already know better than everyone</li>
+          <li>You aren't willing to take responsibility for client outcomes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INVESTMENT ============ -->
+<section class="block" id="investment">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>The Investment</h2>
+      <p>One client at $2,500 setup pays this back. Two clients and you're profitable from week 4.</p>
+    </div>
+
+    <div class="price-card reveal">
+      <div class="price-tag">$5,000</div>
+      <div class="price-sub">One-time · No upsells · No recurring fees to me</div>
+
+      <ul class="price-list">
+        <li>4 weeks of 1-on-1 mentorship with me directly</li>
+        <li>Signal bot source code + dashboard template</li>
+        <li>Full sales playbook (DM scripts, funnel, close framework)</li>
+        <li>30 days post-program support after graduation</li>
+        <li>Lifetime graduates-only Discord access</li>
+        <li>Quarterly strategy huddles forever</li>
+        <li>If you don't sign 1 paying client by graduation, I keep working with you until you do</li>
+      </ul>
+
+      <a href="#apply" class="btn btn-xl">Apply for the Mentorship</a>
+
+      <p class="price-note">Payment plans available (2 or 3 installments). Ask on the application.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="block" id="faq">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>FAQ</h2>
+      <p>The questions everyone asks before booking the call.</p>
+    </div>
+
+    <div class="faq-list reveal">
+      <details class="faq-item">
+        <summary>Do I need to know how to code?</summary>
+        <div class="faq-body">No. You need to be willing to run commands and use an AI assistant. Claude (via OpenClaw) writes 95% of the code. I teach you how to direct it. If you can use a phone, you can do this.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Do I need a big Instagram following to find clients?</summary>
+        <div class="faq-body">No. My first 5 clients came from under 3,000 followers. The playbook works on cold DMs and warm circles. Following helps, but it's not required — execution is.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What if I don't sign a single client?</summary>
+        <div class="faq-body">If you complete the 4 weeks and don't sign a paying client, I keep working with you 1-on-1 until you do. That's the deal. The only way this fails is if you stop showing up.</div>
+      </details>
+      <details class="faq-item">
+        <summary>How is this different from a trading course?</summary>
+        <div class="faq-body">A trading course teaches you to trade your own account. This teaches you to build a service that runs itself and brings in MRR. You'll do both, but the goal is the business, not just your P&amp;L.</div>
+      </details>
+      <details class="faq-item">
+        <summary>How much capital do I need to start trading my own account?</summary>
+        <div class="faq-body">You don't need a personal trading account to run a signal service. Many of my graduates use prop firm funded accounts ($150-$300 to start) to run their own signals while clients copy trade. We'll cover all of that in Week 3.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Will you give me your exact strategy?</summary>
+        <div class="faq-body">I'll give you the architecture and the bot template. You'll develop your own strategy in Week 2 using my framework. If you ran my exact strategy on your clients, you'd just be a clone — that's not the goal.</div>
+      </details>
+      <details class="faq-item">
+        <summary>How many people are in each cohort?</summary>
+        <div class="faq-body">Max 5 per cohort. This is 1-on-1, not a group course. I cap it because I'm running my own service too — I can only give a few people the attention this requires.</div>
+      </details>
+      <details class="faq-item">
+        <summary>How do I apply?</summary>
+        <div class="faq-body">Click "Apply for the Mentorship" below. The application takes 5 minutes. If we're a fit, I'll book a 20-minute call to make sure we both want to work together. No high-pressure pitch — I'd rather lose a fee than take the wrong fit.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What about refunds?</summary>
+        <div class="faq-body">Full refund within 7 days of starting if you decide it's not for you and have completed all Week 1 work. After Day 7, no refunds — but the outcome guarantee kicks in (I keep working until you sign a client).</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="final-cta" id="apply">
+  <div class="container">
+    <h2>Ready to <span class="accent">Build Your Service?</span></h2>
+    <p>Cohorts are capped at 5 students. When the seats are gone, the next cohort is 6 weeks out.</p>
+    <a href="https://forms.gle/" class="btn btn-xl" id="apply-btn">Apply for the Mentorship →</a>
+    <p style="margin-top:20px; color:var(--text-mute); font-size:13px;">Or DM <a href="https://instagram.com/laythbanks" style="color:var(--mint);">@laythbanks</a> on Instagram if you'd rather talk first.</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <div class="foot-top">
+      <div class="logo-wrap">
+        <a href="/"><div class="logo">
+          <img src="logo.jpg" alt="MintyTraders" style="height:40px; width:auto; object-fit:contain;">
+        </div></a>
+      </div>
+      <div class="foot-links">
+        <a href="/">Home</a>
+        <a href="#curriculum">Curriculum</a>
+        <a href="#investment">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="mailto:laythbanks@gmail.com">Contact</a>
+      </div>
+    </div>
+    <div class="foot-meta">© 2026 MintyTraders Mentorship · Built by Layth Banks</div>
+    <p class="risk">
+      <strong>Risk Disclaimer:</strong> Trading futures, options, and other derivatives involves substantial risk of loss and is not suitable for every investor. Past performance and personal results shown on this page are not indicative of future results, and are not a guarantee of any outcome for participants in the mentorship program. Building a trading-related service involves business, regulatory, and execution risk that varies by jurisdiction. Mentorship participants are responsible for any required licensing, compliance, and disclosures in their own region. The MintyTraders Mentorship is an educational program — it does not guarantee any specific income or trading outcome. Please consult licensed financial and legal professionals before launching any trading-related service.
+    </p>
+  </div>
+</footer>
+
+<script>
+  /* ---------- Reveal on scroll ---------- */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* ---------- Hero particles (same as index) ---------- */
+  (function () {
+    const canvas = document.getElementById('particles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, particles, dpr;
+    const COLORS = ['rgba(64,216,192,', 'rgba(192,132,252,'];
+    const COUNT = window.innerWidth < 700 ? 28 : 56;
+
+    function resize() {
+      dpr = window.devicePixelRatio || 1;
+      const hero = canvas.parentElement;
+      w = hero.offsetWidth;
+      h = hero.offsetHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function init() {
+      resize();
+      particles = Array.from({ length: COUNT }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 2 + 0.6,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        c: COLORS[Math.floor(Math.random() * COLORS.length)],
+        a: Math.random() * 0.5 + 0.2
+      }));
+    }
+
+    function tick() {
+      ctx.clearRect(0, 0, w, h);
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.c + p.a + ')';
+        ctx.fill();
+      }
+      requestAnimationFrame(tick);
+    }
+
+    window.addEventListener('resize', resize);
+    init();
+    tick();
+  })();
+</script>
+
+</body>
+</html>
