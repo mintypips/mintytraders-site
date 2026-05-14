@@ -3700,6 +3700,7 @@
     grid.appendChild(renderDarkpoolCard(d.darkpool));
     grid.appendChild(renderVwapCard(d.vwap));
     grid.appendChild(renderClCard(d.cl));
+    grid.appendChild(renderLiveZscoreCard(d.live_zscore));
   }
 
   // ---- helpers ----
@@ -3905,6 +3906,40 @@
       <div class="livebot-row"><span class="k">Opening range</span><span class="v ${orComplete ? 'v-pos' : ''}">${orComplete == null ? '—' : (orComplete ? '✅ complete' : '🔨 building')}</span></div>
       <div class="livebot-row"><span class="k">OR direction</span><span class="v">${orDir || '—'}</span></div>
       ${_openTradeBox(s.open_trade, s.cl_price ?? s.price)}
+      ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  function renderLiveZscoreCard(s) {
+    if (!s || s.error) return _offlineCard('Live Z-Score', '📊', 'Intraday options flow signal');
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+    const lz = parseFloat(s.live_z_score ?? 0);
+    const ez = parseFloat(s.eod_z_score ?? 0);
+    const lbias = s.live_bias || 'FLAT';
+    const ebias = s.eod_bias || 'FLAT';
+    const netPrem = parseFloat(s.live_net_prem ?? 0);
+    const netStr = (netPrem >= 0 ? '+' : '') + (netPrem / 1e6).toFixed(1) + 'M';
+    const netCls = netPrem >= 0 ? 'v-pos' : 'v-neg';
+    const lzBar = Math.min(Math.abs(lz) / 3 * 100, 100);
+    const lzCls = lz >= 0.5 ? '#00d464' : lz <= -0.5 ? '#ff5b5b' : '#f0b429';
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">📊 Live Z-Score</div>
+          <div class="livebot-sub">Intraday UW options flow signal</div>
+        </div>
+        ${_biasPill(lbias)}
+      </div>
+      <div class="livebot-row"><span class="k">Live Z-Score</span><span class="v" style="font-size:18px;font-weight:800;color:${lzCls}">${lz >= 0 ? '+' : ''}${lz.toFixed(3)}</span></div>
+      <div style="margin:6px 0 10px;height:6px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${lzBar}%;background:${lzCls};border-radius:4px;transition:width 1s"></div>
+      </div>
+      <div class="livebot-row"><span class="k">Net Premium</span><span class="v ${netCls}">${netStr}</span></div>
+      <div class="livebot-row"><span class="k">Live Bias</span><span class="v">${_biasPill(lbias)}</span></div>
+      <div class="livebot-row"><span class="k">EOD Z (daily)</span><span class="v">${ez >= 0 ? '+' : ''}${ez.toFixed(3)} · ${_biasPill(ebias)}</span></div>
+      <div class="livebot-row"><span class="k">Ticks today</span><span class="v">${s.ticks_today ?? '—'}</span></div>
+      <div class="livebot-row"><span class="k">Last update</span><span class="v">${s.last_update_s != null ? s.last_update_s + 's ago' : '—'}</span></div>
       ${_footer(s.updated_at)}`;
     return card;
   }
