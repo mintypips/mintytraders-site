@@ -3807,19 +3807,22 @@
     const barColor = score >= max ? 'var(--mint)' : score >= 4 ? '#ffb347' : 'var(--red)';
     const firing = score >= max;
     // Build condition pills from snap or conditions
-    const snap = s.snap || s.conditions || s.checks || {};
-    const longSnap = snap.long || snap;
+    // Read from long_breakdown which is what the bot actually populates
+    const breakdown = s.long_breakdown || {};
     const condEntries = [
       ['dark_pool', 'dark_pool'],
       ['vwap', 'vwap'],
       ['uw_activity', 'uw_activity'],
       ['iceberg_cluster', 'iceberg_cluster'],
-      ['rsi', 'rsi'],
+      ['rsi_extreme', 'rsi'],
+      ['wall_absorption', 'wall'],
+      ['iceberg_at_vwap', 'iceberg@vwap'],
+      ['delta_divergence', 'delta'],
     ];
-    const condHtml = condEntries.map(([label, key]) => {
-      const v = longSnap[key] ?? (s.conditions || {})[key];
-      const ok = !!v;
-      return `<span class="cond-pill ${ok ? 'ok' : 'bad'}">${ok ? '✅' : '❌'} ${label}</span>`;
+    const condHtml = condEntries.map(([key, label]) => {
+      const pts = breakdown[key];
+      const ok = pts != null && pts > 0;
+      return `<span class="cond-pill ${ok ? 'ok' : 'bad'}">${ok ? '✅' : '❌'} ${label} ${ok ? '(+'+pts+')' : ''}</span>`;
     }).join('');
     const longReqs = s.long_hard_reqs_met ?? s.long_ready ?? null;
     const shortReqs = s.short_hard_reqs_met ?? s.short_ready ?? null;
