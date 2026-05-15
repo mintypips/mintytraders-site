@@ -3797,12 +3797,18 @@
     if (!s || s.error) return _offlineCard('Confluence Bot', '🔥', 'ES — multi-signal scoring');
     const card = document.createElement('div');
     card.className = 'livebot-card';
-    const score = Number(s.score ?? 0);
-    const max = Number(s.score_max ?? 7);
+    // Status uses nested objects — extract correctly
+    const dp = s.dark_pool || {};
+    const bias = dp.bias || s.bias || 'FLAT';
+    const zScore = dp.z_score ?? s.z_score ?? 0;
+    const score = Number(s.long_score ?? s.score ?? 0);
+    const max = Number(s.score_threshold ?? s.score_max ?? 7);
     const pct = Math.max(0, Math.min(100, (score / max) * 100));
     const barColor = score >= max ? 'var(--mint)' : score >= 4 ? '#ffb347' : 'var(--red)';
     const firing = score >= max;
-    const conds = s.conditions || s.checks || {};
+    // Build condition pills from snap or conditions
+    const snap = s.snap || s.conditions || s.checks || {};
+    const longSnap = snap.long || snap;
     const condEntries = [
       ['dark_pool', 'dark_pool'],
       ['vwap', 'vwap'],
@@ -3811,22 +3817,26 @@
       ['rsi', 'rsi'],
     ];
     const condHtml = condEntries.map(([label, key]) => {
-      const v = conds[key];
+      const v = longSnap[key] ?? (s.conditions || {})[key];
       const ok = !!v;
       return `<span class="cond-pill ${ok ? 'ok' : 'bad'}">${ok ? '✅' : '❌'} ${label}</span>`;
     }).join('');
     const longReqs = s.long_hard_reqs_met ?? s.long_ready ?? null;
     const shortReqs = s.short_hard_reqs_met ?? s.short_ready ?? null;
+    const zBar = Math.min(Math.abs(zScore) / 3 * 100, 100);
+    const zColor = zScore >= 0.5 ? '#00d464' : zScore <= -0.5 ? '#ff5b5b' : '#f0b429';
     card.innerHTML = `
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🔥 Confluence Bot</div>
           <div class="livebot-sub">ES — multi-signal score</div>
         </div>
-        ${firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(s.bias)}
+        ${firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(bias)}
       </div>
       <div class="livebot-row"><span class="k">Score</span><span class="v">${score} / ${max}</span></div>
       <div class="scorebar"><div class="scorebar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+      <div class="livebot-row"><span class="k">Z-score</span><span class="v" style="color:${zColor};font-weight:700">${zScore >= 0 ? '+' : ''}${Number(zScore).toFixed(3)}</span></div>
+      <div style="margin:4px 0 8px;height:4px;background:rgba(255,255,255,0.08);border-radius:4px"><div style="height:100%;width:${zBar}%;background:${zColor};border-radius:4px"></div></div>
       <div class="cond-pills">${condHtml}</div>
       ${longReqs != null || shortReqs != null ? `
         <div class="livebot-row"><span class="k">Long hard reqs</span><span class="v ${longReqs ? 'v-pos' : 'v-neg'}">${longReqs ? '✅ met' : '❌ not met'}</span></div>
