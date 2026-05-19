@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cancellation & Refund Policy — MintyTraders</title>
+  <link rel="icon" href="logo.jpg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #06070f;
+      --surface: #0d1117;
+      --border: rgba(255,255,255,0.07);
+      --mint: #00d464;
+      --text: #e8eaf0;
+      --text-dim: #7a8396;
+      --red: #ff4d4d;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    header {
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header img { width: 36px; height: 36px; border-radius: 8px; }
+    header a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    header span { color: var(--mint); }
+    .container {
+      max-width: 760px;
+      margin: 60px auto;
+      padding: 0 24px 80px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(0,212,100,0.1);
+      color: var(--mint);
+      border: 1px solid rgba(0,212,100,0.25);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    .last-updated {
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-bottom: 48px;
+    }
+    .policy-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .policy-section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .policy-section h2 .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .icon-green { background: rgba(0,212,100,0.12); }
+    .icon-red   { background: rgba(255,77,77,0.12); }
+    .icon-blue  { background: rgba(99,179,237,0.12); }
+    .icon-gold  { background: rgba(240,180,41,0.12); }
+    p { color: var(--text-dim); margin-bottom: 12px; font-size: 15px; }
+    p:last-child { margin-bottom: 0; }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
+    }
+    ul li {
+      color: var(--text-dim);
+      font-size: 15px;
+      padding: 8px 0 8px 24px;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+    ul li:last-child { border-bottom: none; }
+    ul li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--mint);
+      font-weight: 700;
+    }
+    ul li.no::before { content: '✕'; color: var(--red); }
+    strong { color: var(--text); font-weight: 600; }
+    .highlight {
+      background: rgba(0,212,100,0.06);
+      border: 1px solid rgba(0,212,100,0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 16px;
+    }
+    .highlight p { color: var(--text); margin: 0; font-size: 14px; }
+    .contact-box {
+      background: linear-gradient(135deg, rgba(0,212,100,0.08), rgba(0,212,100,0.03));
+      border: 1px solid rgba(0,212,100,0.2);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      margin-top: 40px;
+    }
+    .contact-box h3 { font-size: 20px; margin-bottom: 8px; }
+    .contact-box p { color: var(--text-dim); margin-bottom: 20px; font-size: 15px; }
+    .btn {
+      display: inline-block;
+      background: var(--mint);
+      color: #000;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 15px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 40px 0;
+    }
+    footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-dim);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--mint); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="logo.jpg" alt="MintyTraders" />
+    <a href="/">Minty<span>Traders</span></a>
+  </header>
+
+  <div class="container">
+    <div class="badge">Legal</div>
+    <h1>Cancellation &amp; Refund Policy</h1>
+    <p class="last-updated">Last updated: May 19, 2026 &nbsp;·&nbsp; Effective immediately</p>
+
+    <!-- SUBSCRIPTIONS -->
+    <div class="policy-section">
+      <h2><span class="icon icon-green">💳</span> Monthly Subscription</h2>
+      <p>Your MintyTraders subscription gives you access to automated trading signals, the live dashboard, and ongoing bot updates.</p>
+      <ul>
+        <li><strong>Cancel anytime</strong> — no lock-in, no cancellation fees. Cancel before your next billing date and you will not be charged again.</li>
+        <li><strong>Access continues</strong> until the end of your current billing period after cancellation.</li>
+        <li><strong>No partial refunds</strong> for unused days within a billing period that has already been charged.</li>
+        <li><strong>Downgrade</strong> to a lower tier takes effect on the next billing cycle.</li>
+      </ul>
+      <div class="highlight">
+        <p>📌 To cancel, simply email us at <strong>support@mintytraders.com</strong> or message us on Telegram and we'll process it within 24 hours.</p>
+      </div>
+    </div>
+
+    <!-- SETUP FEE -->
+    <div class="policy-section">
+      <h2><span class="icon icon-gold">⚙️</span> One-Time Setup Fee</h2>
+      <p>The setup fee covers account onboarding, API configuration, strategy testing on your account, and direct technical support to get you live.</p>
+      <ul>
+        <li class="no"><strong>Non-refundable</strong> once your accounts have been connected and live trading has begun.</li>
+        <li><strong>Refundable in full</strong> if we are unable to successfully connect your account within 7 business days of payment, through no fault of your own.</li>
+        <li><strong>Partial refund</strong> may be considered at our discretion if onboarding was not completed due to compatibility issues outside your control.</li>
+      </ul>
+    </div>
+
+    <!-- MENTORSHIP -->
+    <div class="policy-section">
+      <h2><span class="icon icon-blue">🎓</span> Mentorship Program</h2>
+      <p>All mentorship payments are subject to the following terms:</p>
+      <ul>
+        <li class="no"><strong>Non-refundable</strong> once program access has been granted or sessions have begun.</li>
+        <li><strong>Full refund</strong> if you cancel within 48 hours of purchase and no sessions or materials have been accessed.</li>
+        <li><strong>Deferral</strong> is available — if you need to pause, we can hold your spot for up to 60 days at no charge.</li>
+        <li class="no">No refunds for dissatisfaction with trading results — past performance is not indicative of future results.</li>
+      </ul>
+    </div>
+
+    <!-- WHAT WE DON'T REFUND -->
+    <div class="policy-section">
+      <h2><span class="icon icon-red">⛔</span> Non-Refundable Situations</h2>
+      <p>The following are not eligible for refunds under any circumstances:</p>
+      <ul>
+        <li class="no">Trading losses incurred while using MintyTraders signals or automation</li>
+        <li class="no">Losses resulting from broker-side execution issues, slippage, or platform outages</li>
+        <li class="no">Fees already paid for months where the service was active and accessible</li>
+        <li class="no">Setup fees after your accounts have been successfully onboarded</li>
+        <li class="no">Requests made more than 30 days after the charge date</li>
+      </ul>
+      <div class="highlight">
+        <p>⚠️ <strong>Important:</strong> MintyTraders provides trading signals and automation software, not financial advice. We are not responsible for trading losses. Always trade with risk you can afford to lose.</p>
+      </div>
+    </div>
+
+    <!-- DISPUTE RESOLUTION -->
+    <div class="policy-section">
+      <h2><span class="icon icon-blue">⚖️</span> Dispute Resolution</h2>
+      <p>If you believe you've been charged in error or have a billing concern, please contact us <strong>before</strong> filing a chargeback with your bank. We resolve billing disputes quickly and fairly.</p>
+      <ul>
+        <li>Contact us within <strong>30 days</strong> of the charge for fastest resolution</li>
+        <li>Provide your account email and a description of the issue</li>
+        <li>We aim to respond within <strong>1 business day</strong></li>
+        <li>Chargebacks filed without first contacting support may result in account suspension</li>
+      </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="contact-box">
+      <h3>Questions about your billing?</h3>
+      <p>We're real people. Reach out and we'll sort it out fast.</p>
+      <a href="mailto:support@mintytraders.com" class="btn">Contact Support</a>
+    </div>
+
+  </div>
+
+  <footer>
+    &copy; 2026 MintyTraders. All rights reserved. &nbsp;·&nbsp;
+    <a href="/">Home</a> &nbsp;·&nbsp;
+    <a href="/policies.html">Policies</a>
+  </footer>
+
+</body>
+</html>
