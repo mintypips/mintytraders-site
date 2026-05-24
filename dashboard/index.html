@@ -884,6 +884,8 @@
   .badge-symbol { background: rgba(0,212,255,0.12); color: var(--cyan); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
   .badge-live { background: rgba(0,212,100,0.12); color: var(--mint); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
   .badge-paper { background: rgba(144,144,168,0.12); color: var(--text-dim); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-beta { background: rgba(0,212,255,0.12); color: var(--cyan); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-bot-paused { background: rgba(255,191,0,0.15); color: #ffbf00; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
   .strategy-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
   .strategy-stats { display: flex; gap: 16px; flex-wrap: wrap; }
   .strategy-stat { font-size: 12px; color: var(--text-dim); }
@@ -3581,8 +3583,11 @@
   const BOTS = [
     {id:'iceberg_bot',name:'ES Iceberg Bot',symbol:'ES',emoji:'🧊',description:'Trades ES futures using dark pool flow + Bookmap iceberg detection',stats:{profit_factor:1.09,win_rate:0.89,monthly_per_contract:2100},status:'live'},
     {id:'cl_bot',name:'CL Trend Bot',symbol:'CL',emoji:'🛢️',description:'Trades Crude Oil futures using trend continuation + CVD + Bookmap',stats:{profit_factor:1.15,win_rate:0.56,monthly_per_contract:3200},status:'live'},
-    {id:'vwap_reclaim',name:'VWAP Reclaim Bot',symbol:'ES',emoji:'📈',description:'Trades ES VWAP reclaim setups during range-bound sessions',stats:{profit_factor:1.14,win_rate:0.52,monthly_per_contract:1800},status:'live'},
-    {id:'confluence_bot',name:'ES Confluence Bot',symbol:'ES',emoji:'🔥',description:'Multi-signal confluence scoring using VWAP, dark pool, and order flow',stats:{profit_factor:1.22,win_rate:0.58,monthly_per_contract:2800},status:'live'},
+    {id:'sniper_bot',name:'ES Sniper Bot',symbol:'ES',emoji:'🎯',description:'E22 (Opening Range Breakout) + E24 (5-Min Gap Inverse) confluence within 15-min window. SHORT-only. OOS-verified PF 1.81.',stats:{profit_factor:1.81,win_rate:0.53,monthly_per_contract:430},status:'beta'},
+    {id:'hawk_bot',name:'ES Hawk Bot',symbol:'MES',emoji:'🦅',description:'E07 (Premium FVG Short) + E24 (5-Min Gap Inverse) confluence within 30-min window. SHORT-only. ~16 trades/month.',stats:{profit_factor:1.52,win_rate:0.61,monthly_per_contract:200},status:'beta'},
+    {id:'volley_bot',name:'ES Volley Bot',symbol:'ES',emoji:'🏐',description:'E03 (Trend Continuation) + E11 (Midday Reversal) confluence within 15-min window. 3pt stop / 9pt target / 180-bar time stop. Compound sizing 1→2 ES at +$1,500.',stats:{profit_factor:1.79,win_rate:0.43,monthly_per_contract:3125},status:'beta'},
+    {id:'vwap_reclaim',name:'VWAP Reclaim Bot',symbol:'ES',emoji:'📈',description:'PAUSED — zero fires in 30 days. Pending rebuild with regime filter.',stats:{profit_factor:1.14,win_rate:0.52,monthly_per_contract:1800},status:'paused'},
+    {id:'confluence_bot',name:'ES Confluence Bot',symbol:'ES',emoji:'🔥',description:'PAUSED — only 7 fires/30 days, no exit tracking. Pending tighter source-threshold rebuild.',stats:{profit_factor:1.22,win_rate:0.58,monthly_per_contract:2800},status:'paused'},
   ];
   let strategiesPrefs = {};
 
@@ -3611,7 +3616,7 @@
             <div class="strategy-name">${bot.name}</div>
             <div class="strategy-badges">
               <span class="badge-symbol">${bot.symbol}</span>
-              <span class="${bot.status === 'live' ? 'badge-live' : 'badge-paper'}">${bot.status.toUpperCase()}</span>
+              <span class="${bot.status === 'live' ? 'badge-live' : (bot.status === 'beta' ? 'badge-beta' : (bot.status === 'paused' ? 'badge-bot-paused' : 'badge-paper'))}">${bot.status.toUpperCase()}</span>
             </div>
           </div>
         </div>
