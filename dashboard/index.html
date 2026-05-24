@@ -3586,8 +3586,8 @@
     {id:'sniper_bot',name:'ES Sniper Bot',symbol:'ES',emoji:'🎯',description:'E22 (Opening Range Breakout) + E24 (5-Min Gap Inverse) confluence within 15-min window. SHORT-only. OOS-verified PF 1.81.',stats:{profit_factor:1.81,win_rate:0.53,monthly_per_contract:430},status:'beta'},
     {id:'hawk_bot',name:'ES Hawk Bot',symbol:'MES',emoji:'🦅',description:'E07 (Premium FVG Short) + E24 (5-Min Gap Inverse) confluence within 30-min window. SHORT-only. ~16 trades/month.',stats:{profit_factor:1.52,win_rate:0.61,monthly_per_contract:200},status:'beta'},
     {id:'volley_bot',name:'ES Volley Bot',symbol:'ES',emoji:'🏐',description:'E03 (Trend Continuation) + E11 (Midday Reversal) confluence within 15-min window. 3pt stop / 9pt target / 180-bar time stop. Compound sizing 1→2 ES at +$1,500.',stats:{profit_factor:1.79,win_rate:0.43,monthly_per_contract:3125},status:'beta'},
-    {id:'vwap_reclaim',name:'VWAP Reclaim Bot',symbol:'ES',emoji:'📈',description:'PAUSED — zero fires in 30 days. Pending rebuild with regime filter.',stats:{profit_factor:1.14,win_rate:0.52,monthly_per_contract:1800},status:'paused'},
-    {id:'confluence_bot',name:'ES Confluence Bot',symbol:'ES',emoji:'🔥',description:'PAUSED — only 7 fires/30 days, no exit tracking. Pending tighter source-threshold rebuild.',stats:{profit_factor:1.22,win_rate:0.58,monthly_per_contract:2800},status:'paused'},
+    {id:'vwap_reclaim',name:'VWAP Reclaim Bot',symbol:'ES',emoji:'📈',description:'VWAP reclaim setups during range-bound sessions. Fleet-lock protected.',stats:{profit_factor:1.14,win_rate:0.52,monthly_per_contract:1800},status:'live'},
+    {id:'confluence_bot',name:'ES Confluence Bot',symbol:'ES',emoji:'🔥',description:'Multi-signal confluence (VWAP + dark pool + order flow). Fleet-lock protected.',stats:{profit_factor:1.22,win_rate:0.58,monthly_per_contract:2800},status:'live'},
   ];
   let strategiesPrefs = {};
 
