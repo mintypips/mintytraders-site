@@ -3707,6 +3707,7 @@
     grid.appendChild(renderVolleyCard(d.volley));
     grid.appendChild(renderWhaleScannerCard(d.whale_scanner));
     grid.appendChild(renderDarkpoolCard(d.darkpool));
+    grid.appendChild(renderDarkprintBotCard(d.darkprint));
     grid.appendChild(renderLiveZscoreCard(d.live_zscore));
     grid.appendChild(renderConfluenceCard(d.confluence));
     grid.appendChild(renderVwapCard(d.vwap));
@@ -4052,6 +4053,44 @@
       <div class="livebot-row"><span class="k">Entry sent today</span><span class="v ${entrySent ? 'v-pos' : ''}">${entrySent ? '✅ fired' : '⏳ pending (8:30 CT)'}</span></div>
       <div class="livebot-row"><span class="k">EOD close sent</span><span class="v ${eodSent ? 'v-pos' : ''}">${eodSent ? '✅ sent' : '⏳ pending'}</span></div>
       ${_openTradeBox(s.open_trade, s.es_price)}
+      ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  // ---- DarkPrint Bot card ----
+  function renderDarkprintBotCard(s) {
+    if (!s || s.error) return _offlineCard('DarkPrint Bot', '🖤', 'ES — SPY dark print → ES momentum');
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+    const sig  = s.signals || {};
+    const tr   = s.trade   || {};
+    const mkt  = s.market  || {};
+    const feed = s.feed    || {};
+    const open = tr.open_trade;
+    const paperMode  = s.paper_mode ?? false;
+    const paperBadge = paperMode
+      ? `<span class="badge-beta" style="font-size:10px;background:#b8860b;">📝 PAPER</span>`
+      : `<span class="badge-beta" style="font-size:10px;background:#1a7a3c;">⚡ LIVE</span>`;
+    const qdAgo   = feed.last_qd_poll_ago_s != null ? feed.last_qd_poll_ago_s.toFixed(1) + 's ago' : '—';
+    const qdOk    = feed.last_qd_poll_ago_s != null && feed.last_qd_poll_ago_s < 30;
+    const dbOk    = feed.databento_healthy ?? false;
+    const prints  = sig.pending_prints ?? 0;
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">🖤 DarkPrint Bot <span class="badge-beta" style="font-size:10px">BETA</span> ${paperBadge}</div>
+          <div class="livebot-sub">ES — SPY dark print → ES momentum (3.5/5.25 R:R)</div>
+        </div>
+        ${_biasPill(open ? open.direction : 'FLAT')}
+      </div>
+      <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
+      <div class="livebot-row"><span class="k">RTH session</span><span class="v">${mkt.is_rth ? '✅ open' : '💫 closed'}</span></div>
+      <div class="livebot-row"><span class="k">QD polling</span><span class="v ${qdOk ? 'v-pos' : ''}">${qdAgo}</span></div>
+      <div class="livebot-row"><span class="k">DataBento feed</span><span class="v ${dbOk ? 'v-pos' : 'v-neg'}">${dbOk ? '✅ healthy' : '⚠️ down'}</span></div>
+      <div class="livebot-row"><span class="k">Pending prints</span><span class="v ${prints > 0 ? 'v-pos' : ''}">${prints}</span></div>
+      <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tr.trades_fired ?? 0}</span></div>
+      <div class="livebot-row"><span class="k">Session P&amp;L</span><span class="v ${_pnlClass(tr.daily_pnl_usd)}">${_fmtSigned(tr.daily_pnl_usd, 0)}</span></div>
+      ${_openTradeBox(open, mkt.es_price)}
       ${_footer(s.updated_at)}`;
     return card;
   }
