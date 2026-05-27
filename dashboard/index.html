@@ -3705,6 +3705,7 @@
     grid.appendChild(renderSniperCard(d.sniper));
     grid.appendChild(renderHawkCard(d.hawk));
     grid.appendChild(renderVolleyCard(d.volley));
+    grid.appendChild(renderWhaleScannerCard(d.whale_scanner));
     grid.appendChild(renderDarkpoolCard(d.darkpool));
     grid.appendChild(renderLiveZscoreCard(d.live_zscore));
     grid.appendChild(renderConfluenceCard(d.confluence));
@@ -3957,6 +3958,77 @@
         <div class="livebot-row"><span class="k">Short hard reqs</span><span class="v ${shortReqs ? 'v-pos' : 'v-neg'}">${shortReqs ? '✅ met' : '❌ not met'}</span></div>` : ''}
       ${_openTradeBox(s.open_trade, s.es_price)}
       ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  // ---- 0DTE Whale Scanner card ----
+  function renderWhaleScannerCard(s) {
+    if (!s || s.error || !s.has_data) {
+      const reason = (s && s.error) ? s.error : 'No snapshot yet';
+      return _offlineCard('0DTE Whale Scanner', '🐋', `SPY/QQQ/IWM — ${reason}`);
+    }
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+
+    const scan       = s.scan || {};
+    const cands      = s.candidates || {};
+    const sigsScan   = s.signals_this_scan || {};
+    const alertsTd   = s.alerts_fired_today || [];
+    const cfg        = s.config || {};
+    const inSession  = !!scan.in_session;
+    const gateReason = scan.gate_reason;
+    const gateLabel  = ({
+      weekend:        '💤 Weekend',
+      outside_rth:    '💤 Outside RTH',
+      opening_noise:  '⏳ Opening noise (8:30–8:45 CT)',
+      late_session:   '🕛 Late session (no fresh after 1:30 CT)',
+    })[gateReason] || gateReason || '—';
+
+    const finishedTs = scan.finished_at ? new Date(scan.finished_at) : null;
+    const finishedStr = finishedTs ? finishedTs.toLocaleTimeString() : '—';
+    const stale      = !!s.stale;
+    const pillCls    = stale ? 'offline-pill' : (inSession ? 'live-pill' : 'paused-pill');
+    const pillTxt    = stale ? '⚪ STALE' : (inSession ? '🟢 SCANNING' : '💤 IDLE');
+
+    // Today's alerts list (most recent first, max 5)
+    let alertsHtml = '';
+    if (alertsTd.length === 0) {
+      alertsHtml = `<div style="color:var(--text-dim);font-size:0.85rem;padding:8px 0;">— no whale alerts yet today —</div>`;
+    } else {
+      alertsHtml = alertsTd.slice(0, 5).map(a => {
+        const ts = a.ts ? new Date(a.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+        const side = a.contractType === 'C' ? '🟢 CALL' : a.contractType === 'P' ? '🔴 PUT' : '?';
+        const prem = a.premium_usd != null ? `$${(a.premium_usd/1e3).toFixed(0)}k` : '—';
+        return `<div class="livebot-row"><span class="k">${ts} · ${a.ticker} ${side} $${a.strike}</span><span class="v">${prem} · ${a.trade_count ?? 0} prints</span></div>`;
+      }).join('');
+    }
+
+    // Per-ticker line (candidates / signals-this-scan)
+    const tickerRow = (s.watchlist || ['SPY','QQQ','IWM']).map(t => {
+      const c = cands[t] ?? 0;
+      const sg = (sigsScan[t] || []).length;
+      return `<span class="v" style="margin-right:14px">${t}: ${c} cand · ${sg} sig</span>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">🐋 0DTE Whale Scanner <span class="badge-beta" style="font-size:10px">NEW</span></div>
+          <div class="livebot-sub">SPY · QQQ · IWM — Quant Data sweep/block detection</div>
+        </div>
+        <span class="livebot-pill ${pillCls}">${pillTxt}</span>
+      </div>
+      <div class="livebot-row"><span class="k">Scan state</span><span class="v">${inSession ? '✅ in session' : gateLabel}</span></div>
+      <div class="livebot-row"><span class="k">Last scan</span><span class="v">${finishedStr}</span></div>
+      <div class="livebot-row"><span class="k">Threshold</span><span class="v">$${(cfg.whale_usd_threshold/1e3).toFixed(0)}k / ${cfg.time_window_min || 10}min · ASK-side</span></div>
+      <div class="livebot-row"><span class="k">This scan</span><span class="v">${s.alerts_this_scan ?? 0} fired</span></div>
+      <div class="livebot-row"><span class="k">Today total</span><span class="v ${(s.alerts_fired_today_count > 0) ? 'v-pos' : ''}">${s.alerts_fired_today_count ?? 0} alerts</span></div>
+      <div style="padding:6px 0;font-size:0.8rem;color:var(--text-dim);">${tickerRow}</div>
+      <div class="open-trade-box">
+        <div class="ot-title">🐋 TODAY'S WHALE PRINTS</div>
+        ${alertsHtml}
+      </div>
+      ${_footer(scan.finished_at)}`;
     return card;
   }
 
