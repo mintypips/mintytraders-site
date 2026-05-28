@@ -3715,6 +3715,24 @@
   }
 
   // ---- Sniper card ----
+  // Shared firing-bar renderer for engine-pair bots
+  function _enginePairBar(conds) {
+    // conds = [{label, ok}, ...]; returns {html, score, max, firing}
+    const max = conds.length;
+    const score = conds.filter(c => c.ok).length;
+    const firing = score === max;
+    const pct = max > 0 ? (score / max) * 100 : 0;
+    const barColor = firing ? 'var(--mint)' : score >= Math.ceil(max * 0.66) ? '#ffb347' : 'var(--red)';
+    const pills = conds.map(c => `<span class="cond-pill ${c.ok ? 'ok' : 'bad'}">${c.ok ? '✅' : '❌'} ${c.label}</span>`).join('');
+    return {
+      html: `
+        <div class="livebot-row"><span class="k">Confluence</span><span class="v">${score} / ${max}${firing ? ' 🔥' : ''}</span></div>
+        <div class="scorebar"><div class="scorebar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+        <div class="cond-pills">${pills}</div>`,
+      firing,
+    };
+  }
+
   function renderSniperCard(s) {
     if (!s || s.error) return _offlineCard('Sniper Bot', '🎯', 'ES — E22+E24 confluence (15m)');
     const card = document.createElement('div');
@@ -3724,21 +3742,27 @@
     const mkt = s.market || {};
     const life = s.lifetime || {};
     const open = tr.open_trade;
-    const conflPossible = sig.confluence_possible;
     const wrPct = life.win_rate != null ? (life.win_rate * 100).toFixed(0) + '%' : '—';
+    const e22 = Number(sig.e22_in_window ?? 0);
+    const e24 = Number(sig.e24_in_window ?? 0);
+    const fb = _enginePairBar([
+      {label: `E22 (${e22})`, ok: e22 > 0},
+      {label: `E24 (${e24})`, ok: e24 > 0},
+      {label: 'RTH',           ok: !!mkt.is_rth},
+      {label: 'no open',       ok: !open},
+    ]);
     card.innerHTML = `
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🎯 Sniper Bot <span class="badge-beta" style="font-size:10px">BETA</span></div>
           <div class="livebot-sub">ES — E22 (ORB) + E24 (Gap Inv) AND15 — SHORT-only</div>
         </div>
-        ${_biasPill(open ? open.direction : 'FLAT')}
+        ${fb.firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(open ? open.direction : 'FLAT')}
       </div>
+      ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
-      <div class="livebot-row"><span class="k">RTH session</span><span class="v">${mkt.is_rth ? '✅ open' : '💫 closed'}</span></div>
-      <div class="livebot-row"><span class="k">E22 signals (15m)</span><span class="v">${sig.e22_in_window ?? 0}</span></div>
-      <div class="livebot-row"><span class="k">E24 signals (15m)</span><span class="v">${sig.e24_in_window ?? 0}</span></div>
-      <div class="livebot-row"><span class="k">Confluence ready</span><span class="v ${conflPossible ? 'v-pos' : ''}">${conflPossible ? '🔥 ARMED' : 'waiting'}</span></div>
+      <div class="livebot-row"><span class="k">E22 signals (15m)</span><span class="v">${e22}</span></div>
+      <div class="livebot-row"><span class="k">E24 signals (15m)</span><span class="v">${e24}</span></div>
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tr.trades_fired ?? 0}</span></div>
       <div class="livebot-row"><span class="k">Session P&L</span><span class="v ${_pnlClass(tr.daily_pnl_usd)}">${_fmtSigned(tr.daily_pnl_usd, 0)}</span></div>
       <div class="livebot-row"><span class="k">Lifetime W/L</span><span class="v">${life.total_wins ?? 0}W / ${life.total_losses ?? 0}L · ${wrPct}</span></div>
@@ -3757,21 +3781,27 @@
     const mkt = s.market || {};
     const life = s.lifetime || {};
     const open = tr.open_trade;
-    const conflPossible = sig.confluence_possible;
     const wrPct = life.win_rate != null ? (life.win_rate * 100).toFixed(0) + '%' : '—';
+    const e07 = Number(sig.e07_in_window ?? 0);
+    const e24 = Number(sig.e24_in_window ?? 0);
+    const fb = _enginePairBar([
+      {label: `E07 (${e07})`, ok: e07 > 0},
+      {label: `E24 (${e24})`, ok: e24 > 0},
+      {label: 'RTH',           ok: !!mkt.is_rth},
+      {label: 'no open',       ok: !open},
+    ]);
     card.innerHTML = `
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🦅 Hawk Bot <span class="badge-beta" style="font-size:10px">BETA</span></div>
           <div class="livebot-sub">MES — E07 (Premium FVG) + E24 (Gap Inv) AND30 — SHORT-only</div>
         </div>
-        ${_biasPill(open ? open.direction : 'FLAT')}
+        ${fb.firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(open ? open.direction : 'FLAT')}
       </div>
+      ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
-      <div class="livebot-row"><span class="k">RTH session</span><span class="v">${mkt.is_rth ? '✅ open' : '💫 closed'}</span></div>
-      <div class="livebot-row"><span class="k">E07 signals (30m)</span><span class="v">${sig.e07_in_window ?? 0}</span></div>
-      <div class="livebot-row"><span class="k">E24 signals (30m)</span><span class="v">${sig.e24_in_window ?? 0}</span></div>
-      <div class="livebot-row"><span class="k">Confluence ready</span><span class="v ${conflPossible ? 'v-pos' : ''}">${conflPossible ? '🔥 ARMED' : 'waiting'}</span></div>
+      <div class="livebot-row"><span class="k">E07 signals (30m)</span><span class="v">${e07}</span></div>
+      <div class="livebot-row"><span class="k">E24 signals (30m)</span><span class="v">${e24}</span></div>
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tr.trades_fired ?? 0}</span></div>
       <div class="livebot-row"><span class="k">Session P&L</span><span class="v ${_pnlClass(tr.daily_pnl_usd)}">${_fmtSigned(tr.daily_pnl_usd, 0)}</span></div>
       <div class="livebot-row"><span class="k">Lifetime W/L</span><span class="v">${life.total_wins ?? 0}W / ${life.total_losses ?? 0}L · ${wrPct}</span></div>
@@ -3791,23 +3821,29 @@
     const life = s.lifetime || {};
     const sizing = s.sizing || {};
     const open = tr.open_trade;
-    const conflPossible = sig.confluence_possible;
     const wrPct = life.win_rate != null ? (life.win_rate * 100).toFixed(0) + '%' : '—';
     const qty = sizing.current_qty ?? 1;
     const armed = sizing.compound_armed;
+    const e03 = Number(sig.e03_in_window ?? 0);
+    const e11 = Number(sig.e11_in_window ?? 0);
+    const fb = _enginePairBar([
+      {label: `E03 (${e03})`, ok: e03 > 0},
+      {label: `E11 (${e11})`, ok: e11 > 0},
+      {label: 'RTH',           ok: !!mkt.is_rth},
+      {label: 'no open',       ok: !open},
+    ]);
     card.innerHTML = `
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🏐 Volley Bot <span class="badge-beta" style="font-size:10px">BETA</span></div>
           <div class="livebot-sub">ES — E03 (Trend) + E11 (Midday Rev) AND15 — 3pt/9pt</div>
         </div>
-        ${_biasPill(open ? open.direction : 'FLAT')}
+        ${fb.firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(open ? open.direction : 'FLAT')}
       </div>
+      ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
-      <div class="livebot-row"><span class="k">RTH session</span><span class="v">${mkt.is_rth ? '✅ open' : '💫 closed'}</span></div>
-      <div class="livebot-row"><span class="k">E03 signals (15m)</span><span class="v">${sig.e03_in_window ?? 0}</span></div>
-      <div class="livebot-row"><span class="k">E11 signals (15m)</span><span class="v">${sig.e11_in_window ?? 0}</span></div>
-      <div class="livebot-row"><span class="k">Confluence ready</span><span class="v ${conflPossible ? 'v-pos' : ''}">${conflPossible ? '🔥 ARMED' : 'waiting'}</span></div>
+      <div class="livebot-row"><span class="k">E03 signals (15m)</span><span class="v">${e03}</span></div>
+      <div class="livebot-row"><span class="k">E11 signals (15m)</span><span class="v">${e11}</span></div>
       <div class="livebot-row"><span class="k">Position size</span><span class="v ${armed ? 'v-pos' : ''}">${qty} ES ${armed ? '· 💪 compound' : ''}</span></div>
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tr.trades_fired ?? 0}</span></div>
       <div class="livebot-row"><span class="k">Session P&L</span><span class="v ${_pnlClass(tr.daily_pnl_usd)}">${_fmtSigned(tr.daily_pnl_usd, 0)}</span></div>
@@ -4098,6 +4134,8 @@
     const tr   = s.trade   || {};
     const mkt  = s.market  || {};
     const feed = s.feed    || {};
+    const cfg  = s.config  || {};
+    const macro = s.macro  || {};
     const open = tr.open_trade;
     const paperMode  = s.paper_mode ?? false;
     const paperBadge = paperMode
@@ -4105,26 +4143,54 @@
       : `<span class="badge-beta" style="font-size:10px;background:#1a7a3c;">⚡ LIVE</span>`;
     const qdAgo   = feed.last_qd_poll_ago_s != null ? feed.last_qd_poll_ago_s.toFixed(1) + 's ago' : '—';
     const qdOk    = feed.last_qd_poll_ago_s != null && feed.last_qd_poll_ago_s < 30;
-    const dbOk    = feed.databento_healthy ?? false;
-    const prints  = sig.pending_prints ?? 0;
+    const dbOk    = !!feed.databento_healthy;
+    const prints  = Number(sig.pending_prints ?? 0);
+    const tradesT = Number(tr.trades_fired ?? 0);
+    const maxT    = Number(macro.max_trades ?? cfg.max_trades_day ?? 8);
+    const macroOK = macro && macro.present && macro.trade_today && !_inAvoidWindow(macro.avoid_window);
+    const lockOK  = !tr.locked_reason;
+    const fb = _enginePairBar([
+      {label: `cluster (${prints})`, ok: prints > 0},
+      {label: 'macro',               ok: macroOK},
+      {label: 'RTH',                 ok: !!mkt.is_rth},
+      {label: 'feeds',               ok: dbOk && qdOk},
+      {label: 'no open',             ok: !open},
+      {label: `trades<${maxT}`,      ok: tradesT < maxT && lockOK},
+    ]);
     card.innerHTML = `
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🖤 DarkPrint Bot <span class="badge-beta" style="font-size:10px">BETA</span> ${paperBadge}</div>
           <div class="livebot-sub">ES — SPY dark print → ES momentum (3.5/5.25 R:R)</div>
         </div>
-        ${_biasPill(open ? open.direction : 'FLAT')}
+        ${fb.firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(open ? open.direction : 'FLAT')}
       </div>
+      ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
-      <div class="livebot-row"><span class="k">RTH session</span><span class="v">${mkt.is_rth ? '✅ open' : '💫 closed'}</span></div>
-      <div class="livebot-row"><span class="k">QD polling</span><span class="v ${qdOk ? 'v-pos' : ''}">${qdAgo}</span></div>
-      <div class="livebot-row"><span class="k">DataBento feed</span><span class="v ${dbOk ? 'v-pos' : 'v-neg'}">${dbOk ? '✅ healthy' : '⚠️ down'}</span></div>
       <div class="livebot-row"><span class="k">Pending prints</span><span class="v ${prints > 0 ? 'v-pos' : ''}">${prints}</span></div>
-      <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tr.trades_fired ?? 0}</span></div>
+      <div class="livebot-row"><span class="k">QD polling</span><span class="v ${qdOk ? 'v-pos' : 'v-neg'}">${qdAgo}</span></div>
+      <div class="livebot-row"><span class="k">DataBento feed</span><span class="v ${dbOk ? 'v-pos' : 'v-neg'}">${dbOk ? '✅ healthy' : '⚠️ down'}</span></div>
+      <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesT} / ${maxT}</span></div>
       <div class="livebot-row"><span class="k">Session P&amp;L</span><span class="v ${_pnlClass(tr.daily_pnl_usd)}">${_fmtSigned(tr.daily_pnl_usd, 0)}</span></div>
+      ${tr.locked_reason ? `<div class="livebot-warn">🔒 ${tr.locked_reason}</div>` : ''}
       ${_openTradeBox(open, mkt.es_price)}
       ${_footer(s.updated_at)}`;
     return card;
+  }
+
+  // Helper: is current CT time inside any of the macro avoid windows like "07:25-08:00"?
+  function _inAvoidWindow(windows) {
+    if (!Array.isArray(windows) || !windows.length) return false;
+    const ct = ctNow();
+    const cur = ct.h * 60 + ct.m;
+    for (const w of windows) {
+      const m = String(w).match(/^(\d{1,2}):(\d{2})\s*[-–]\s*(\d{1,2}):(\d{2})$/);
+      if (!m) continue;
+      const a = (+m[1]) * 60 + (+m[2]);
+      const b = (+m[3]) * 60 + (+m[4]);
+      if (cur >= a && cur < b) return true;
+    }
+    return false;
   }
 
   // ---- VWAP Reclaim card ----
