@@ -4146,7 +4146,8 @@
     const dbOk    = !!feed.databento_healthy;
     const prints  = Number(sig.pending_prints ?? 0);
     const tradesT = Number(tr.trades_fired ?? 0);
-    const maxT    = Number(macro.max_trades ?? cfg.max_trades_day ?? 8);
+    // DarkPrint ignores macro.max_trades override — uses its own cfg.max_trades_day (8)
+    const maxT    = Number(cfg.max_trades_day ?? 8);
     const macroOK = macro && macro.present && macro.trade_today && !_inAvoidWindow(macro.avoid_window);
     const lockOK  = !tr.locked_reason;
     const fb = _enginePairBar([
