@@ -3886,16 +3886,47 @@
     const tradesToday = s.trades_today ?? s.trades_fired ?? 0;
     const maxTrades = s.max_trades ?? s.max_trades_per_day ?? null;
     const maxReached = maxTrades != null && tradesToday >= maxTrades;
+
+    // ── Confluence firing bar ──
+    const c = s.confluence || {};
+    const cScore = Number(c.score ?? 0);
+    const cMax   = Number(c.score_max ?? 9);
+    const cPct   = cMax > 0 ? Math.max(0, Math.min(100, (cScore / cMax) * 100)) : 0;
+    const firing = !!c.firing;
+    const barColor = firing ? 'var(--mint)' : cScore >= Math.ceil(cMax * 0.66) ? '#ffb347' : 'var(--red)';
+    const conds = c.conditions || {};
+    const condLabels = [
+      ['bias_active',     'bias'],
+      ['z_threshold',     'z≥thr'],
+      ['macro_allows',    'macro'],
+      ['vwap_aligned',    'vwap'],
+      ['bookmap_iceberg', 'iceberg'],
+      ['no_cooldown',     'cooldown'],
+      ['in_window',       'window'],
+      ['under_max',       'maxtrades'],
+      ['no_open_trade',   'flat'],
+    ];
+    const condHtml = condLabels.map(([key, label]) => {
+      const ok = conds[key] === true;
+      return `<span class="cond-pill ${ok ? 'ok' : 'bad'}">${ok ? '✅' : '❌'} ${label}</span>`;
+    }).join('');
+    const nearIce = c.nearest_iceberg_pts;
+    const nearIceLabel = nearIce == null ? 'none in 2m' : `${nearIce.toFixed(2)} pts away`;
+
     card.innerHTML = `
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🧊 Iceberg Bot</div>
           <div class="livebot-sub">ES — dark pool z-score + Bookmap icebergs</div>
         </div>
-        ${_biasPill(s.bias)}
+        ${firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(s.bias)}
       </div>
-      <div class="livebot-row"><span class="k">Z-score</span><span class="v">${_fmtNum(s.z_score)}</span></div>
+      <div class="livebot-row"><span class="k">Confluence</span><span class="v">${cScore} / ${cMax}${firing ? ' 🔥' : ''}</span></div>
+      <div class="scorebar"><div class="scorebar-fill" style="width:${cPct}%;background:${barColor};"></div></div>
+      <div class="cond-pills">${condHtml}</div>
+      <div class="livebot-row"><span class="k">Z-score</span><span class="v">${_fmtNum(s.z_score)} ${c.z_threshold != null ? '<span style="color:var(--text-dim);font-size:.85em">(thr ±' + c.z_threshold + ')</span>' : ''}</span></div>
       ${_zbar(s.z_score)}
+      <div class="livebot-row"><span class="k">Nearest iceberg</span><span class="v">${nearIceLabel}</span></div>
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(s.es_price)}</span></div>
       <div class="livebot-row"><span class="k">VWAP</span><span class="v">${_fmtNum(s.vwap)} · ${vwapInd}</span></div>
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesToday}${maxTrades != null ? ' / ' + maxTrades : ''}</span></div>
