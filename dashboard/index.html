@@ -3857,6 +3857,33 @@
     const cls = b === 'LONG' ? 'long' : b === 'SHORT' ? 'short' : 'flat';
     return `<span class="livebot-pill ${cls}">${b}</span>`;
   }
+  // 2026-05-28: VWAP ±1σ bands display — shows trader where the dynamic
+  // support/resistance is and whether current price is within the band-proximity
+  // entry window. Highlights green when price is near the relevant band (LONG
+  // wants near upper, SHORT wants near lower).
+  function _vwapBandsBlock(s) {
+    const upper = s.vwap_upper;
+    const lower = s.vwap_lower;
+    const price = s.es_price;
+    const slack = s.vwap_band_dist_pts;
+    const bias  = String(s.bias || '').toUpperCase();
+    if (upper == null || lower == null) {
+      return `<div class="livebot-row"><span class="k">VWAP bands</span><span class="v" style="color:var(--text-dim);font-style:italic">building (need 1m bars)</span></div>`;
+    }
+    const distUp  = price != null ? Math.abs(price - upper) : null;
+    const distLow = price != null ? Math.abs(price - lower) : null;
+    const upperHit = bias === 'LONG'  && distUp  != null && slack != null && distUp  <= slack;
+    const lowerHit = bias === 'SHORT' && distLow != null && slack != null && distLow <= slack;
+    const upperColor = upperHit ? 'var(--mint)' : 'var(--text-dim)';
+    const lowerColor = lowerHit ? 'var(--red)'  : 'var(--text-dim)';
+    const distUpLabel  = distUp  != null ? `±${distUp.toFixed(2)}pt`  : '';
+    const distLowLabel = distLow != null ? `±${distLow.toFixed(2)}pt` : '';
+    return `
+      <div class="livebot-row"><span class="k">Upper band (+1σ)</span><span class="v" style="color:${upperColor}">${_fmtNum(upper)} <span style="font-size:.85em">(${distUpLabel}${upperHit ? ' ✅ in window' : ''})</span></span></div>
+      <div class="livebot-row"><span class="k">Lower band (−1σ)</span><span class="v" style="color:${lowerColor}">${_fmtNum(lower)} <span style="font-size:.85em">(${distLowLabel}${lowerHit ? ' ✅ in window' : ''})</span></span></div>
+      ${slack != null ? `<div class="livebot-row"><span class="k">Band slack</span><span class="v" style="color:var(--text-dim);font-size:.85em">±${slack}pt around band</span></div>` : ''}
+    `;
+  }
   function _zbar(z) {
     if (z == null || isNaN(z)) return '<div class="zbar"><div class="zbar-mid"></div></div>';
     const clamped = Math.max(-3, Math.min(3, Number(z)));
@@ -3963,6 +3990,7 @@
       <div class="livebot-row"><span class="k">Nearest iceberg</span><span class="v">${nearIceLabel}</span></div>
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(s.es_price)}</span></div>
       <div class="livebot-row"><span class="k">VWAP</span><span class="v">${_fmtNum(s.vwap)} · ${vwapInd}</span></div>
+      ${_vwapBandsBlock(s)}
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesToday}${maxTrades != null ? ' / ' + maxTrades : ''}</span></div>
       <div class="livebot-row"><span class="k">Daily PnL</span><span class="v ${_pnlClass(pnl)}">${pnl == null ? '—' : _fmtSigned(pnl) + ' pts'}</span></div>
       ${maxReached ? '<div class="livebot-warn">⚠️ Max trades reached — no new entries today.</div>' : ''}
