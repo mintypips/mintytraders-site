@@ -3992,7 +3992,7 @@
       <div class="livebot-row"><span class="k">VWAP</span><span class="v">${_fmtNum(s.vwap)} · ${vwapInd}</span></div>
       ${_vwapBandsBlock(s)}
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesToday}${maxTrades != null ? ' / ' + maxTrades : ''}</span></div>
-      <div class="livebot-row"><span class="k">Daily PnL</span><span class="v ${_pnlClass(pnl)}">${pnl == null ? '—' : _fmtSigned(pnl) + ' pts'}</span></div>
+      <div class="livebot-row"><span class="k">Daily P&L</span><span class="v ${_pnlClass(s.daily_pnl_usd ?? pnl)}">${s.daily_pnl_usd != null ? _fmtSigned(s.daily_pnl_usd, 0) : (pnl == null ? '—' : _fmtSigned(pnl) + ' pts')}</span></div>
       ${maxReached ? '<div class="livebot-warn">⚠️ Max trades reached — no new entries today.</div>' : ''}
       ${_openTradeBox(s.open_trade, s.es_price)}
       ${_footer(s.updated_at)}`;
