@@ -1252,6 +1252,14 @@
       .print-row .pr-prem { font-weight:600; color: var(--text); min-width:74px; }
       .print-row .pr-px { color: var(--text-dim); }
       .print-row .pr-age { margin-left:auto; color: var(--text-faint); }
+      .trig-box { margin: 8px 0 4px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
+      .trig-row { display:flex; justify-content:space-between; font-size:0.74rem; padding:2px 0; }
+      .trig-row .k { color: var(--text-dim); }
+      .trig-row .v { font-weight:600; color: var(--text); }
+      .trig-verdict { margin-top:5px; font-size:0.74rem; font-weight:700; }
+      .trig-verdict .trig-ok { color: var(--mint); }
+      .trig-verdict .trig-bad { color: #ffb347; }
+      .trig-verdict .trig-wait { color: var(--text-faint); font-weight:500; }
       .livebots-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; }
       .livebots-status { font-size:0.78rem; color: var(--text-dim); }
       .livebots-status .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
@@ -3774,11 +3782,13 @@
     const wrPct = life.win_rate != null ? (life.win_rate * 100).toFixed(0) + '%' : '—';
     const e22 = Number(sig.e22_in_window ?? 0);
     const e24 = Number(sig.e24_in_window ?? 0);
+    const aligned = !!(sig.confluence_long || sig.confluence_short);
     const fb = _enginePairBar([
-      {label: `E22 (${e22})`, ok: e22 > 0},
-      {label: `E24 (${e24})`, ok: e24 > 0},
-      {label: 'RTH',           ok: !!mkt.is_rth},
-      {label: 'no open',       ok: !open},
+      {label: `E22 (${e22})`,    ok: e22 > 0},
+      {label: `E24 (${e24})`,    ok: e24 > 0},
+      {label: 'engines agree',   ok: aligned},
+      {label: 'RTH',             ok: !!mkt.is_rth},
+      {label: 'no open',         ok: !open},
     ]);
     card.innerHTML = `
       <div class="livebot-head">
@@ -3789,6 +3799,7 @@
         ${_enginePairBadge(open, fb.armed)}
       </div>
       ${fb.html}
+      ${_confluenceTrigger(sig, {key:'e22_sides',label:'E22 (ORB)'}, {key:'e24_sides',label:'E24 (Gap Inv)'})}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
       <div class="livebot-row"><span class="k">E22 signals (15m)</span><span class="v">${e22}</span></div>
       <div class="livebot-row"><span class="k">E24 signals (15m)</span><span class="v">${e24}</span></div>
@@ -3813,11 +3824,13 @@
     const wrPct = life.win_rate != null ? (life.win_rate * 100).toFixed(0) + '%' : '—';
     const e07 = Number(sig.e07_in_window ?? 0);
     const e24 = Number(sig.e24_in_window ?? 0);
+    const aligned = !!(sig.confluence_long || sig.confluence_short);
     const fb = _enginePairBar([
-      {label: `E07 (${e07})`, ok: e07 > 0},
-      {label: `E24 (${e24})`, ok: e24 > 0},
-      {label: 'RTH',           ok: !!mkt.is_rth},
-      {label: 'no open',       ok: !open},
+      {label: `E07 (${e07})`,    ok: e07 > 0},
+      {label: `E24 (${e24})`,    ok: e24 > 0},
+      {label: 'engines agree',   ok: aligned},
+      {label: 'RTH',             ok: !!mkt.is_rth},
+      {label: 'no open',         ok: !open},
     ]);
     card.innerHTML = `
       <div class="livebot-head">
@@ -3828,6 +3841,7 @@
         ${_enginePairBadge(open, fb.armed)}
       </div>
       ${fb.html}
+      ${_confluenceTrigger(sig, {key:'e07_sides',label:'E07 (Prem FVG)'}, {key:'e24_sides',label:'E24 (Gap Inv)'})}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
       <div class="livebot-row"><span class="k">E07 signals (30m)</span><span class="v">${e07}</span></div>
       <div class="livebot-row"><span class="k">E24 signals (30m)</span><span class="v">${e24}</span></div>
@@ -3855,11 +3869,13 @@
     const armed = sizing.compound_armed;
     const e03 = Number(sig.e03_in_window ?? 0);
     const e11 = Number(sig.e11_in_window ?? 0);
+    const enginesAligned = !!(sig.confluence_long || sig.confluence_short);
     const fb = _enginePairBar([
-      {label: `E03 (${e03})`, ok: e03 > 0},
-      {label: `E11 (${e11})`, ok: e11 > 0},
-      {label: 'RTH',           ok: !!mkt.is_rth},
-      {label: 'no open',       ok: !open},
+      {label: `E03 (${e03})`,    ok: e03 > 0},
+      {label: `E11 (${e11})`,    ok: e11 > 0},
+      {label: 'engines agree',   ok: enginesAligned},
+      {label: 'RTH',             ok: !!mkt.is_rth},
+      {label: 'no open',         ok: !open},
     ]);
     card.innerHTML = `
       <div class="livebot-head">
@@ -3870,6 +3886,7 @@
         ${_enginePairBadge(open, fb.armed)}
       </div>
       ${fb.html}
+      ${_confluenceTrigger(sig, {key:'e03_sides',label:'E03 (Trend)'}, {key:'e11_sides',label:'E11 (Midday Rev)'})}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
       <div class="livebot-row"><span class="k">E03 signals (15m)</span><span class="v">${e03}</span></div>
       <div class="livebot-row"><span class="k">E11 signals (15m)</span><span class="v">${e11}</span></div>
@@ -3895,6 +3912,25 @@
     if (open) return '<span class="livebot-pill fire">FIRING 🔥</span>';
     if (armed) return '<span class="livebot-pill armed">ARMED ⚡</span>';
     return _biasPill('FLAT');
+  }
+  // Trigger-status row for two-engine confluence bots. Shows each engine's signal
+  // side(s) in the window and whether they AGREE (which is what actually fires).
+  // sig = bot.signals; eA/eB = {key,label} for the two engines.
+  function _confluenceTrigger(sig, eA, eB) {
+    const sidesA = Array.isArray(sig[eA.key]) ? sig[eA.key] : [];
+    const sidesB = Array.isArray(sig[eB.key]) ? sig[eB.key] : [];
+    const fmt = (arr) => arr.length ? arr.map(x => String(x).toUpperCase()).join('/') : '—';
+    const agree = !!(sig.confluence_long || sig.confluence_short);
+    const dir = sig.confluence_long ? 'LONG' : sig.confluence_short ? 'SHORT' : null;
+    let verdict;
+    if (agree) verdict = `<span class="trig-ok">✅ aligned → ${dir}</span>`;
+    else if (sidesA.length && sidesB.length) verdict = '<span class="trig-bad">⚠️ engines disagree — no fire</span>';
+    else verdict = '<span class="trig-wait">waiting for both engines</span>';
+    return `<div class="trig-box">
+      <div class="trig-row"><span class="k">${eA.label}</span><span class="v">${fmt(sidesA)}</span></div>
+      <div class="trig-row"><span class="k">${eB.label}</span><span class="v">${fmt(sidesB)}</span></div>
+      <div class="trig-verdict">${verdict}</div>
+    </div>`;
   }
   // 2026-05-28: VWAP ±1σ bands display — shows trader where the dynamic
   // support/resistance is and whether current price is within the band-proximity
