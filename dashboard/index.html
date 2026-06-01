@@ -1207,6 +1207,7 @@
       .livebot-pill.short { background: rgba(255,91,91,0.15); color: var(--red);  border:1px solid rgba(255,91,91,0.3); }
       .livebot-pill.flat  { background: rgba(255,255,255,0.04); color: var(--text-dim); border:1px solid var(--border); }
       .livebot-pill.fire  { background: rgba(255,165,0,0.18); color: #ffb347; border:1px solid rgba(255,165,0,0.4); animation: pulseFire 1.5s infinite; }
+      .livebot-pill.armed { background: rgba(0,212,100,0.12); color: var(--mint); border:1px solid rgba(0,212,100,0.3); }
       @keyframes pulseFire { 0%,100% { box-shadow: 0 0 0 0 rgba(255,165,0,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,165,0,0); } }
       .livebot-pill.offline-pill { background: rgba(255,91,91,0.12); color: var(--red); border:1px solid rgba(255,91,91,0.3); }
       .livebot-row { display:flex; justify-content:space-between; align-items:center; padding: 7px 0; font-size: 0.88rem; }
@@ -3725,20 +3726,25 @@
 
   // ---- Sniper card ----
   // Shared firing-bar renderer for engine-pair bots
+  // NOTE: `armed` = all readiness conditions met (bot is allowed + ready to fire).
+  // It does NOT mean a trade was placed. Actual execution is signalled by an
+  // open_trade in the bot's status — callers should show FIRING only when a
+  // trade is actually open, and ARMED when armed-but-flat.
   function _enginePairBar(conds) {
-    // conds = [{label, ok}, ...]; returns {html, score, max, firing}
+    // conds = [{label, ok}, ...]; returns {html, score, max, armed, firing}
     const max = conds.length;
     const score = conds.filter(c => c.ok).length;
-    const firing = score === max;
+    const armed = score === max;
     const pct = max > 0 ? (score / max) * 100 : 0;
-    const barColor = firing ? 'var(--mint)' : score >= Math.ceil(max * 0.66) ? '#ffb347' : 'var(--red)';
+    const barColor = armed ? 'var(--mint)' : score >= Math.ceil(max * 0.66) ? '#ffb347' : 'var(--red)';
     const pills = conds.map(c => `<span class="cond-pill ${c.ok ? 'ok' : 'bad'}">${c.ok ? '✅' : '❌'} ${c.label}</span>`).join('');
     return {
       html: `
-        <div class="livebot-row"><span class="k">Confluence</span><span class="v">${score} / ${max}${firing ? ' 🔥' : ''}</span></div>
+        <div class="livebot-row"><span class="k">Confluence</span><span class="v">${score} / ${max}${armed ? ' ⚡' : ''}</span></div>
         <div class="scorebar"><div class="scorebar-fill" style="width:${pct}%;background:${barColor};"></div></div>
         <div class="cond-pills">${pills}</div>`,
-      firing,
+      armed,
+      firing: armed, // back-comat alias; prefer explicit open-trade check at call site
     };
   }
 
@@ -3766,7 +3772,7 @@
           <div class="livebot-title">🎯 Sniper Bot <span class="badge-beta" style="font-size:10px">BETA</span></div>
           <div class="livebot-sub">ES — E22 (ORB) + E24 (Gap Inv) AND15 — SHORT-only</div>
         </div>
-        ${fb.firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(open ? open.direction : 'FLAT')}
+        ${_enginePairBadge(open, fb.armed)}
       </div>
       ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
@@ -3805,7 +3811,7 @@
           <div class="livebot-title">🦅 Hawk Bot <span class="badge-beta" style="font-size:10px">BETA</span></div>
           <div class="livebot-sub">MES — E07 (Premium FVG) + E24 (Gap Inv) AND30 — SHORT-only</div>
         </div>
-        ${fb.firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(open ? open.direction : 'FLAT')}
+        ${_enginePairBadge(open, fb.armed)}
       </div>
       ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
@@ -3847,7 +3853,7 @@
           <div class="livebot-title">🏐 Volley Bot <span class="badge-beta" style="font-size:10px">BETA</span></div>
           <div class="livebot-sub">ES — E03 (Trend) + E11 (Midday Rev) AND15 — 3pt/9pt</div>
         </div>
-        ${fb.firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(open ? open.direction : 'FLAT')}
+        ${_enginePairBadge(open, fb.armed)}
       </div>
       ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
@@ -3867,6 +3873,14 @@
     const b = String(bias || 'FLAT').toUpperCase();
     const cls = b === 'LONG' ? 'long' : b === 'SHORT' ? 'short' : 'flat';
     return `<span class="livebot-pill ${cls}">${b}</span>`;
+  }
+  // Status badge for engine-pair bots. FIRING means an actual trade is open.
+  // ARMED means all readiness conditions are met but no trade has fired yet
+  // (this is the common 6/6 state — ready, not executing). Otherwise show bias.
+  function _enginePairBadge(open, armed) {
+    if (open) return '<span class="livebot-pill fire">FIRING 🔥</span>';
+    if (armed) return '<span class="livebot-pill armed">ARMED ⚡</span>';
+    return _biasPill('FLAT');
   }
   // 2026-05-28: VWAP ±1σ bands display — shows trader where the dynamic
   // support/resistance is and whether current price is within the band-proximity
@@ -4201,7 +4215,7 @@
           <div class="livebot-title">🖤 DarkPrint Bot <span class="badge-beta" style="font-size:10px">BETA</span> ${paperBadge}</div>
           <div class="livebot-sub">ES — SPY dark print → ES momentum (4pt SL / 6pt TP)</div>
         </div>
-        ${fb.firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(open ? open.direction : 'FLAT')}
+        ${_enginePairBadge(open, fb.armed)}
       </div>
       ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
