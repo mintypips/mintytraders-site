@@ -1238,6 +1238,20 @@
       .open-trade-box .ot-title { font-size: 0.72rem; color: #c4b3ff; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
       .livebot-footer { display:flex; justify-content:space-between; margin-top: 14px; font-size: 0.7rem; color: var(--text-faint); }
       .livebot-warn { margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: rgba(255,165,0,0.08); border:1px solid rgba(255,165,0,0.25); color:#ffb347; font-size: 0.78rem; }
+      .prints-box { margin-top: 12px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
+      .prints-title { font-size: 0.72rem; color: var(--text-dim); font-weight: 700; letter-spacing: 0.4px; margin-bottom: 8px; display:flex; flex-direction:column; gap:2px; }
+      .prints-hint { font-size: 0.62rem; color: var(--text-faint); font-weight: 500; letter-spacing: 0; }
+      .prints-empty { font-size: 0.74rem; color: var(--text-faint); font-style: italic; }
+      .print-row { display:flex; align-items:center; gap:8px; font-size:0.74rem; padding:3px 0; font-variant-numeric: tabular-nums; }
+      .print-row.print-stale { opacity: 0.45; }
+      .print-row .pr-dot { font-size:0.6rem; }
+      .print-row .pr-dir { font-weight:700; min-width:46px; }
+      .print-row .pr-dir.pr-long { color: var(--mint); }
+      .print-row .pr-dir.pr-short { color: var(--red); }
+      .print-row .pr-dir.pr-flat { color: var(--text-dim); }
+      .print-row .pr-prem { font-weight:600; color: var(--text); min-width:74px; }
+      .print-row .pr-px { color: var(--text-dim); }
+      .print-row .pr-age { margin-left:auto; color: var(--text-faint); }
       .livebots-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; }
       .livebots-status { font-size:0.78rem; color: var(--text-dim); }
       .livebots-status .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
@@ -3961,6 +3975,40 @@
       </div>`;
   }
 
+  // Recent dark-pool prints DarkPrint is tracking. A print is LIVE (counts toward
+  // a cluster) only while it's within the cluster window; older prints are shown
+  // greyed/"stale" so the trader can see why a fire did or didn't happen.
+  // windowS = cluster window seconds; instantM = single-print instant-fire $M threshold.
+  function _recentPrintsBox(prints, windowS, instantM) {
+    if (!Array.isArray(prints) || prints.length === 0) {
+      return `<div class="prints-box"><div class="prints-title">🧾 Recent prints</div>
+        <div class="prints-empty">no prints tracked yet</div></div>`;
+    }
+    const win = Number(windowS) || 120;
+    const inst = Number(instantM) || 50;
+    const rows = prints.map(p => {
+      const dir = String(p.direction || '').toUpperCase();
+      const dirCls = dir === 'LONG' ? 'pr-long' : dir === 'SHORT' ? 'pr-short' : 'pr-flat';
+      const age = Number(p.ts_ago_s ?? 0);
+      const live = age <= win;
+      const prem = Number(p.premium_m ?? 0);
+      const whale = prem >= inst; // would instant-fire on its own
+      const ageTxt = age >= 60 ? `${Math.floor(age/60)}m${Math.round(age%60)}s` : `${Math.round(age)}s`;
+      const dot = live ? '🟢' : '⚪';
+      return `<div class="print-row ${live ? '' : 'print-stale'}">
+        <span class="pr-dot">${dot}</span>
+        <span class="pr-dir ${dirCls}">${dir}</span>
+        <span class="pr-prem">$${prem.toFixed(1)}M${whale ? ' 🐋' : ''}</span>
+        <span class="pr-px">@${_fmtNum(p.price)}</span>
+        <span class="pr-age">${ageTxt} ago</span>
+      </div>`;
+    }).join('');
+    return `<div class="prints-box">
+      <div class="prints-title">🧾 Recent prints <span class="prints-hint">🟢 live (&lt;${win}s) · ⚪ stale · 🐋 ≥$${inst}M solo-fires</span></div>
+      ${rows}
+    </div>`;
+  }
+
   // ---- Iceberg card ----
   function renderIcebergCard(s) {
     if (!s || s.error) return _offlineCard('Iceberg Bot', '🧊', 'ES — dark pool + Bookmap');
@@ -4225,6 +4273,7 @@
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesT} / ${maxT}</span></div>
       <div class="livebot-row"><span class="k">Session P&amp;L</span><span class="v ${_pnlClass(tr.daily_pnl_usd)}">${_fmtSigned(tr.daily_pnl_usd, 0)}</span></div>
       ${tr.locked_reason ? `<div class="livebot-warn">🔒 ${tr.locked_reason}</div>` : ''}
+      ${_recentPrintsBox(sig.recent_prints, sig.cluster_window_s, sig.instant_fire_m)}
       ${_openTradeBox(open, mkt.es_price)}
       ${_footer(s.updated_at)}`;
     return card;
