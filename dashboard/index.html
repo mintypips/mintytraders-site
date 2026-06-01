@@ -3645,26 +3645,37 @@
         wrap.style.opacity = this.checked ? '1' : '0.4';
         wrap.style.pointerEvents = this.checked ? 'auto' : 'none';
         label.textContent = this.checked ? 'Active' : 'Disabled';
+        persistStrategies();
       });
+      const csel = card.querySelector(`#contracts_${bot.id}`);
+      if (csel) csel.addEventListener('change', persistStrategies);
       grid.appendChild(card);
     });
     const saveBtn = document.getElementById('saveStrategiesBtn');
-    if (saveBtn) saveBtn.style.display = '';
+    if (saveBtn) saveBtn.style.display = 'none';
   }
 
-  document.addEventListener('click', async function(e) {
-    if (e.target && e.target.id === 'saveStrategiesBtn') {
-      const prefs = {};
-      BOTS.forEach(bot => {
-        const tog = document.getElementById('toggle_' + bot.id);
-        const sel = document.getElementById('contracts_' + bot.id);
-        if (tog) prefs[bot.id] = { enabled: tog.checked, contracts: sel ? parseInt(sel.value) : 1 };
-      });
-      const result = await apiPost('/api/strategies', { subscribed_bots: prefs });
-      const msg = document.getElementById('strategiesSaveMsg');
-      if (msg) { msg.style.display = ''; setTimeout(() => msg.style.display = 'none', 3000); }
+  // Collect current toggle/contract state and persist immediately.
+  // Keeps strategiesPrefs in sync so a re-render (route change/refresh) won't snap toggles back.
+  let _persistTimer = null;
+  async function persistStrategies() {
+    const prefs = {};
+    BOTS.forEach(bot => {
+      const tog = document.getElementById('toggle_' + bot.id);
+      const sel = document.getElementById('contracts_' + bot.id);
+      if (tog) prefs[bot.id] = { enabled: tog.checked, contracts: sel ? parseInt(sel.value) : 1 };
+    });
+    strategiesPrefs = prefs; // keep local cache current
+    const result = await apiPost('/api/strategies', { subscribed_bots: prefs });
+    const msg = document.getElementById('strategiesSaveMsg');
+    if (msg) {
+      msg.textContent = result.success ? '✅ Saved' : '⚠️ Save failed';
+      msg.style.color = result.success ? 'var(--mint)' : 'var(--red)';
+      msg.style.display = '';
+      clearTimeout(_persistTimer);
+      _persistTimer = setTimeout(() => msg.style.display = 'none', 2000);
     }
-  });
+  }
 
   // ============= LIVE BOTS =============
   let _livebotsTimer = null;
