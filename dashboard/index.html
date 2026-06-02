@@ -2017,7 +2017,8 @@
   async function loadTrades() {
     const result = await apiGet('/api/trades?limit=100');
     if (result.success && result.data) {
-      cachedTrades = result.data.trades || result.data || [];
+      const rawTrades = result.data.trades || result.data || [];
+      cachedTrades = collapseBySignal(rawTrades);
       renderDashTrades();
       renderTrades();
     } else {
@@ -2026,6 +2027,34 @@
       document.getElementById('dashTradesBody').innerHTML = empty;
       document.getElementById('tradesBody').innerHTML = empty;
     }
+  }
+
+  // Collapse multiple per-account rows of the SAME signal into ONE display row.
+  // Fan-out writes one trade row per broker account (needed for anti-hedge close),
+  // but the user should see one fill per signal, not N (one per account).
+  function collapseBySignal(trades) {
+    if (!Array.isArray(trades) || !trades.length) return trades || [];
+    const groups = new Map();
+    for (const t of trades) {
+      const sig = t.signal_id || t.signalId;
+      if (!sig) continue;
+      if (!groups.has(sig)) groups.set(sig, { ...t, _accounts: 0 });
+      const g = groups.get(sig);
+      g._accounts += 1;
+      g.pnl_usd = Number(t.pnl ?? t.profit ?? t.pnl_usd ?? 0);
+      if (!g.exit_price && (t.exit_price || t.exit)) g.exit_price = t.exit_price || t.exit;
+      if ((t.status || '').toLowerCase() === 'open') g.status = 'open';
+    }
+    const seen = new Set();
+    const out = [];
+    for (const t of trades) {
+      const sig = t.signal_id || t.signalId;
+      if (!sig) { out.push(t); continue; }
+      if (seen.has(sig)) continue;
+      seen.add(sig);
+      out.push(groups.get(sig));
+    }
+    return out;
   }
 
   function tradeRow(t) {
