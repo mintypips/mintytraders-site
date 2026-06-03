@@ -4230,7 +4230,8 @@
     } else {
       alertsHtml = alertsTd.slice(0, 5).map(a => {
         const ts = a.ts ? new Date(a.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
-        const side = a.contractType === 'C' ? '🟢 CALL' : a.contractType === 'P' ? '🔴 PUT' : '?';
+        const _ct = (a.contractType || '').toString().toUpperCase();
+        const side = (_ct === 'C' || _ct === 'CALL') ? '🟢 CALL' : (_ct === 'P' || _ct === 'PUT') ? '🔴 PUT' : '?';
         const prem = a.premium_usd != null ? `$${(a.premium_usd/1e3).toFixed(0)}k` : '—';
         return `<div class="livebot-row"><span class="k">${ts} · ${a.ticker} ${side} $${a.strike}</span><span class="v">${prem} · ${a.trade_count ?? 0} prints</span></div>`;
       }).join('');
