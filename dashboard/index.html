@@ -3772,6 +3772,7 @@
     grid.appendChild(renderWhaleScannerCard(d.whale_scanner));
     grid.appendChild(renderDarkpoolCard(d.darkpool));
     grid.appendChild(renderDarkprintBotCard(d.darkprint));
+    grid.appendChild(renderApexBotCard(d.apex));
     grid.appendChild(renderLiveZscoreCard(d.live_zscore));
     // 2026-05-28: confluence + vwap_reclaim cards retired from live grid
   }
@@ -4342,6 +4343,57 @@
       ${tr.locked_reason ? `<div class="livebot-warn">🔒 ${tr.locked_reason}</div>` : ''}
       ${_recentPrintsBox(sig.recent_prints, sig.cluster_window_s, sig.instant_fire_m)}
       ${_openTradeBox(open, mkt.es_price)}
+      ${_footer(s.updated_at)}`;
+    return card;
+  }
+
+  // ---- Apex card ----
+  function renderApexBotCard(s) {
+    if (!s || s.error) return _offlineCard('Apex Bot', '🛡️', 'ES — Variant A (delta sign + VWAP bias)');
+    const card = document.createElement('div');
+    card.className = 'livebot-card';
+    const tr   = s.day     || {};
+    const mkt  = s.market  || {};
+    const feed = s.feed    || {};
+    const cfg  = s.config  || {};
+    const life = s.lifetime || {};
+    const open = tr.open_position;
+    const paperMode  = s.paper_mode ?? false;
+    const paperBadge = paperMode
+      ? `<span class="badge-beta" style="font-size:10px;background:#b8860b;">📝 PAPER</span>`
+      : `<span class="badge-beta" style="font-size:10px;background:#1a7a3c;">⚡ LIVE</span>`;
+    const dbOk    = !!feed.ohlcv_healthy && !!feed.trades_healthy;
+    const biasLocked = !!tr.bias_locked;
+    const biasStr = tr.bias === 1 ? 'LONG-only' : tr.bias === -1 ? 'SHORT-only' : (biasLocked ? 'NO-TRADE' : 'pending');
+    const tradesT = Number(tr.trades_fired ?? 0);
+    const maxT    = Number(cfg.max_trades_day ?? 4);
+    const lockOK  = !tr.locked_reason;
+    const wrPct   = life.win_rate != null ? (life.win_rate * 100).toFixed(0) + '%' : '—';
+    const isRth = (() => { const ct = ctNow(); const cur = ct.h*60+ct.m; return cur >= (8*60+30) && cur < (15*60); })();
+    const fb = _enginePairBar([
+      {label: 'bias locked',     ok: biasLocked && tr.bias !== 0},
+      {label: 'RTH',             ok: isRth},
+      {label: 'feeds',           ok: dbOk},
+      {label: 'no open',         ok: !open},
+      {label: `trades<${maxT}`,  ok: tradesT < maxT && lockOK},
+    ]);
+    card.innerHTML = `
+      <div class="livebot-head">
+        <div>
+          <div class="livebot-title">🛡️ Apex Bot <span class="badge-beta" style="font-size:10px">BETA</span> ${paperBadge}</div>
+          <div class="livebot-sub">ES — delta sign + VWAP bias (8pt SL / 8pt TP)</div>
+        </div>
+        ${_enginePairBadge(open, fb.armed)}
+      </div>
+      ${fb.html}
+      <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
+      <div class="livebot-row"><span class="k">Day bias</span><span class="v">${biasStr}</span></div>
+      <div class="livebot-row"><span class="k">DataBento feed</span><span class="v ${dbOk ? 'v-pos' : 'v-neg'}">${dbOk ? '✅ healthy' : '⚠️ down'}</span></div>
+      <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesT} / ${maxT}</span></div>
+      <div class="livebot-row"><span class="k">Win rate (life)</span><span class="v">${wrPct}</span></div>
+      <div class="livebot-row"><span class="k">Session P&amp;L</span><span class="v ${_pnlClass(tr.daily_pnl_usd)}">${_fmtSigned(tr.daily_pnl_usd, 0)}</span></div>
+      ${tr.locked_reason ? `<div class="livebot-warn">🔒 ${tr.locked_reason}</div>` : ''}
+      ${_openTradeBox(open ? {direction: (open.side||'').toUpperCase()==='LONG'?'LONG':'SHORT', entry: open.entry} : null, mkt.es_price)}
       ${_footer(s.updated_at)}`;
     return card;
   }
