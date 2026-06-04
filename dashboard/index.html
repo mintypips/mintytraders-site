@@ -3633,7 +3633,7 @@
 
   // ============= STRATEGIES =============
   const BOTS = [
-    {id:'iceberg_bot',name:'ES Iceberg Bot',symbol:'ES',emoji:'🧊',description:'Trades ES futures using dark pool flow + Bookmap iceberg detection',stats:{profit_factor:1.09,win_rate:0.89,monthly_per_contract:2100},status:'live'},
+    {id:'iceberg_bot',name:'ES Iceberg Bot',symbol:'MES',emoji:'🧊',description:'Order-flow ABSORPTION + CONFLUENCE engine (v2). Bidirectional: absorption anchor confirmed by CVD divergence or VWAP location. 4pt stop / 9pt target / 45min time stop, max 4 trades/day, 08:30-14:30 CT. Backtest PF 1.36 (OOS 1.60).',stats:{profit_factor:1.36,win_rate:0.49,monthly_per_contract:850},status:'beta'},
     {id:'cl_bot',name:'CL Trend Bot',symbol:'CL',emoji:'🛢️',description:'Trades Crude Oil futures using trend continuation + CVD + Bookmap',stats:{profit_factor:1.15,win_rate:0.56,monthly_per_contract:3200},status:'live'},
     {id:'sniper_bot',name:'ES Sniper Bot',symbol:'ES',emoji:'🎯',description:'E22 (Opening Range Breakout) + E24 (5-Min Gap Inverse) confluence within 15-min window. SHORT-only. OOS-verified PF 1.81.',stats:{profit_factor:1.81,win_rate:0.53,monthly_per_contract:430},status:'beta'},
     {id:'hawk_bot',name:'ES Hawk Bot',symbol:'MES',emoji:'🦅',description:'E07 (Premium FVG Short) + E24 (5-Min Gap Inverse) confluence within 30-min window. SHORT-only. ~16 trades/month.',stats:{profit_factor:1.52,win_rate:0.61,monthly_per_contract:200},status:'beta'},
@@ -4078,63 +4078,61 @@
 
   // ---- Iceberg card ----
   function renderIcebergCard(s) {
-    if (!s || s.error) return _offlineCard('Iceberg Bot', '🧊', 'ES — dark pool + Bookmap');
+    if (!s || s.error) return _offlineCard('Iceberg Bot', '🧊', 'MES — absorption confluence');
     const card = document.createElement('div');
     card.className = 'livebot-card';
-    const aboveVwap = s.price_above_vwap;
-    const vwapInd = aboveVwap == null ? '—' : (aboveVwap ? '<span class="v-pos">▲ above</span>' : '<span class="v-neg">▼ below</span>');
-    const pnl = s.daily_pnl_pts ?? s.pnl_today ?? s.today_pnl_pts ?? null;
     const tradesToday = s.trades_today ?? s.trades_fired ?? 0;
-    const maxTrades = s.max_trades ?? s.max_trades_per_day ?? null;
-    const maxReached = maxTrades != null && tradesToday >= maxTrades;
 
-    // ── Confluence firing bar ──
-    const c = s.confluence || {};
-    const cScore = Number(c.score ?? 0);
-    const cMax   = Number(c.score_max ?? 9);
-    const cPct   = cMax > 0 ? Math.max(0, Math.min(100, (cScore / cMax) * 100)) : 0;
-    const firing = !!c.firing;
-    const barColor = firing ? 'var(--mint)' : cScore >= Math.ceil(cMax * 0.66) ? '#ffb347' : 'var(--red)';
-    const conds = c.conditions || {};
-    const condLabels = [
-      ['bias_active',     'bias'],
-      ['z_threshold',     'z≥thr'],
-      ['macro_allows',    'macro'],
-      ['vwap_aligned',    'vwap'],
-      ['bookmap_iceberg', 'iceberg'],
-      ['no_cooldown',     'cooldown'],
-      ['in_window',       'window'],
-      ['under_max',       'maxtrades'],
-      ['no_open_trade',   'flat'],
+    // ── NEW: absorption_confluence_v2 strategy ──
+    const cv = s.confluence_v2 || {};
+    const maxTrades = cv.max_per_day ?? s.max_trades ?? 4;
+    const maxReached = maxTrades != null && tradesToday >= maxTrades;
+    const gd = cv.gate_detail || {};
+    const ready = !!cv.ready;
+    const dir = cv.direction;  // 'long' | 'short' | null
+    const open = s.open_trade;
+    // Gate pills: each gate fires for long OR short. Show ok if either side true.
+    const gateDefs = [
+      ['absorption', gd.absorption_long || gd.absorption_short],
+      ['cvd div',    gd.cvd_div_long   || gd.cvd_div_short],
+      ['vwap loc',   gd.vwap_side_long || gd.vwap_side_short],
+      ['window',     !!cv.in_window],
+      ['no open',    !open],
+      ['trades<' + maxTrades, tradesToday < maxTrades],
     ];
-    const condHtml = condLabels.map(([key, label]) => {
-      const ok = conds[key] === true;
-      return `<span class="cond-pill ${ok ? 'ok' : 'bad'}">${ok ? '✅' : '❌'} ${label}</span>`;
-    }).join('');
-    const nearIce = c.nearest_iceberg_pts;
-    const nearIceLabel = nearIce == null ? 'none in 2m' : `${nearIce.toFixed(2)} pts away`;
+    const gScore = gateDefs.filter(g => g[1]).length;
+    const gMax   = gateDefs.length;
+    const gPct   = gMax > 0 ? Math.max(0, Math.min(100, (gScore / gMax) * 100)) : 0;
+    const barColor = ready ? 'var(--mint)' : gScore >= Math.ceil(gMax * 0.66) ? '#ffb347' : 'var(--red)';
+    const gateHtml = gateDefs.map(([label, ok]) =>
+      `<span class="cond-pill ${ok ? 'ok' : 'bad'}">${ok ? '✅' : '❌'} ${label}</span>`).join('');
+    const dirPill = ready && dir
+      ? `<span class="livebot-pill fire">${dir.toUpperCase()} 🔥</span>`
+      : `<span class="livebot-pill">SCANNING</span>`;
+    const cvdLast = cv.cvd_last;
+    const shadowTag = (s.shadow_mode === true)
+      ? ` <span class="badge-beta" style="font-size:10px;background:#b8860b;">👁 SHADOW</span>` : '';
 
     card.innerHTML = `
       <div class="livebot-head">
         <div>
-          <div class="livebot-title">🧊 Iceberg Bot</div>
-          <div class="livebot-sub">ES — dark pool z-score + Bookmap icebergs</div>
+          <div class="livebot-title">🧊 Iceberg Bot <span class="badge-beta" style="font-size:10px">BETA</span>${shadowTag}</div>
+          <div class="livebot-sub">MES — absorption + confluence (bidirectional)</div>
         </div>
-        ${firing ? '<span class="livebot-pill fire">FIRING 🔥</span>' : _biasPill(s.bias)}
+        ${dirPill}
       </div>
-      <div class="livebot-row"><span class="k">Confluence</span><span class="v">${cScore} / ${cMax}${firing ? ' 🔥' : ''}</span></div>
-      <div class="scorebar"><div class="scorebar-fill" style="width:${cPct}%;background:${barColor};"></div></div>
-      <div class="cond-pills">${condHtml}</div>
-      <div class="livebot-row"><span class="k">Z-score</span><span class="v">${_fmtNum(s.z_score)} ${c.z_threshold != null ? '<span style="color:var(--text-dim);font-size:.85em">(thr ±' + c.z_threshold + ')</span>' : ''}</span></div>
-      ${_zbar(s.z_score)}
-      <div class="livebot-row"><span class="k">Nearest iceberg</span><span class="v">${nearIceLabel}</span></div>
+      <div class="livebot-row"><span class="k">Confluence</span><span class="v">${gScore} / ${gMax}${ready ? ' 🔥' : ''}</span></div>
+      <div class="scorebar"><div class="scorebar-fill" style="width:${gPct}%;background:${barColor};"></div></div>
+      <div class="cond-pills">${gateHtml}</div>
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(s.es_price)}</span></div>
-      <div class="livebot-row"><span class="k">VWAP</span><span class="v">${_fmtNum(s.vwap)} · ${vwapInd}</span></div>
-      ${_vwapBandsBlock(s)}
-      <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesToday}${maxTrades != null ? ' / ' + maxTrades : ''}</span></div>
-      <div class="livebot-row"><span class="k">Daily P&L</span><span class="v ${_pnlClass(s.daily_pnl_usd ?? pnl)}">${s.daily_pnl_usd != null ? _fmtSigned(s.daily_pnl_usd, 0) : (pnl == null ? '—' : _fmtSigned(pnl) + ' pts')}</span></div>
+      <div class="livebot-row"><span class="k">CVD</span><span class="v ${cvdLast > 0 ? 'v-pos' : cvdLast < 0 ? 'v-neg' : ''}">${cvdLast != null ? _fmtSigned(cvdLast, 0) : '—'}</span></div>
+      <div class="livebot-row"><span class="k">Setup</span><span class="v">${ready && dir ? dir.toUpperCase() + ' ready' : 'none'}</span></div>
+      <div class="livebot-row"><span class="k">Geometry</span><span class="v">${_fmtNum(cv.stop_pts)}pt SL / ${_fmtNum(cv.tp_pts)}pt TP</span></div>
+      <div class="livebot-row"><span class="k">Window</span><span class="v">${cv.window_ct || '08:30-14:30'} ${cv.in_window ? '<span class="v-pos">● open</span>' : '<span style="color:var(--text-dim)">closed</span>'}</span></div>
+      <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesToday} / ${maxTrades}</span></div>
+      <div class="livebot-row"><span class="k">Daily P&L</span><span class="v ${_pnlClass(s.daily_pnl_usd)}">${s.daily_pnl_usd != null ? _fmtSigned(s.daily_pnl_usd, 0) : '—'}</span></div>
       ${maxReached ? '<div class="livebot-warn">⚠️ Max trades reached — no new entries today.</div>' : ''}
-      ${_openTradeBox(s.open_trade, s.es_price)}
+      ${_openTradeBox(open, s.es_price)}
       ${_footer(s.updated_at)}`;
     return card;
   }
