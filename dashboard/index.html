@@ -4329,6 +4329,7 @@
       ${fb.html}
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(mkt.es_price)}</span></div>
       <div class="livebot-row"><span class="k">Cum delta (session)</span><span class="v ${mkt.cum_delta == null ? '' : (mkt.cum_delta > 0 ? 'v-pos' : mkt.cum_delta < 0 ? 'v-neg' : '')}">${mkt.cum_delta == null ? '—' : (mkt.cum_delta > 0 ? '▲ +' : mkt.cum_delta < 0 ? '▼ ' : '') + Number(mkt.cum_delta).toLocaleString()}</span></div>
+      <div class="livebot-row"><span class="k">Delta slope (entry signal)</span><span class="v ${mkt.delta_slope == null ? '' : (mkt.delta_slope > 0 ? 'v-pos' : mkt.delta_slope < 0 ? 'v-neg' : '')}">${mkt.delta_slope == null ? '—' : (mkt.delta_slope > 0 ? '▲ +' : mkt.delta_slope < 0 ? '▼ ' : '') + Number(mkt.delta_slope).toLocaleString() + (mkt.delta_sign === -1 ? ' (SHORT ok)' : mkt.delta_sign === 1 ? ' (LONG ok)' : '')}</span></div>
       <div class="livebot-row"><span class="k">Day bias</span><span class="v">${biasStr}</span></div>
       <div class="livebot-row"><span class="k">DataBento feed</span><span class="v ${dbOk ? 'v-pos' : 'v-neg'}">${dbOk ? '✅ healthy' : '⚠️ down'}</span></div>
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesT} / ${maxT}</span></div>
