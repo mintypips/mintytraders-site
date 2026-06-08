@@ -3662,7 +3662,6 @@
   // ============= STRATEGIES =============
   const BOTS = [
     {id:'iceberg_bot',name:'ES Iceberg Bot',symbol:'MES',emoji:'🧊',description:'Order-flow ABSORPTION + CONFLUENCE engine (v2). Bidirectional: absorption anchor confirmed by CVD divergence or VWAP location. 4pt stop / 9pt target / 45min time stop, max 4 trades/day, 08:30-14:30 CT. Backtest PF 1.36 (OOS 1.60).',stats:{profit_factor:1.36,win_rate:0.49,monthly_per_contract:850},status:'beta'},
-    {id:'cl_bot',name:'CL Trend Bot',symbol:'CL',emoji:'🛢️',description:'Trades Crude Oil futures using trend continuation + CVD + Bookmap',stats:{profit_factor:1.15,win_rate:0.56,monthly_per_contract:3200},status:'live'},
     {id:'sniper_bot',name:'ES Sniper Bot',symbol:'ES',emoji:'🎯',description:'E22 (Opening Range Breakout) + E24 (5-Min Gap Inverse) confluence within 15-min window. SHORT-only. OOS-verified PF 1.81.',stats:{profit_factor:1.81,win_rate:0.53,monthly_per_contract:430},status:'beta'},
     {id:'volley_bot',name:'ES Volley Bot',symbol:'ES',emoji:'🏐',description:'E03 (Trend Continuation) + E11 (Midday Reversal) confluence within 15-min window. 3pt stop / 9pt target / 180-bar time stop. Compound sizing 1→2 ES at +$1,500.',stats:{profit_factor:1.79,win_rate:0.43,monthly_per_contract:3125},status:'beta'},
     // 2026-05-28: vwap_reclaim and confluence_bot retired from public catalog
@@ -3792,7 +3791,6 @@
     }
     grid.innerHTML = '';
     grid.appendChild(renderIcebergCard(d.iceberg));
-    grid.appendChild(renderClCard(d.cl));
     grid.appendChild(renderSniperCard(d.sniper));
     grid.appendChild(renderVolleyCard(d.volley));
     grid.appendChild(renderWhaleScannerCard(d.whale_scanner));
@@ -4416,32 +4414,6 @@
       <div class="livebot-row"><span class="k">Pre-market window</span><span class="v ${inWindow ? 'v-pos' : ''}">${inWindow ? '🟢 active' : '⏳ closed'}</span></div>
       <div class="livebot-row"><span class="k">ES Price</span><span class="v">${_fmtNum(s.es_price)}</span></div>
       ${_openTradeBox(s.open_trade, s.es_price)}
-      ${_footer(s.updated_at)}`;
-    return card;
-  }
-
-  // ---- CL card ----
-  function renderClCard(s) {
-    if (!s || s.error) return _offlineCard('CL Bot', '🛢️', 'CL — opening range trend');
-    const card = document.createElement('div');
-    card.className = 'livebot-card';
-    const aboveVwap = s.price_above_vwap;
-    const vwapInd = aboveVwap == null ? '—' : (aboveVwap ? '<span class="v-pos">▲ above</span>' : '<span class="v-neg">▼ below</span>');
-    const orComplete = s.or_complete ?? s.opening_range_complete ?? null;
-    const orDir = s.or_direction ?? s.opening_range_direction ?? null;
-    card.innerHTML = `
-      <div class="livebot-head">
-        <div>
-          <div class="livebot-title">🛢️ CL Bot</div>
-          <div class="livebot-sub">Crude oil — opening range + trend</div>
-        </div>
-        ${_biasPill(orDir || s.bias)}
-      </div>
-      <div class="livebot-row"><span class="k">CL Price</span><span class="v">${_fmtNum(s.cl_price ?? s.price)}</span></div>
-      <div class="livebot-row"><span class="k">VWAP</span><span class="v">${_fmtNum(s.vwap)} · ${vwapInd}</span></div>
-      <div class="livebot-row"><span class="k">Opening range</span><span class="v ${orComplete ? 'v-pos' : ''}">${orComplete == null ? '—' : (orComplete ? '✅ complete' : '🔨 building')}</span></div>
-      <div class="livebot-row"><span class="k">OR direction</span><span class="v">${orDir || '—'}</span></div>
-      ${_openTradeBox(s.open_trade, s.cl_price ?? s.price)}
       ${_footer(s.updated_at)}`;
     return card;
   }
