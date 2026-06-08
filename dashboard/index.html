@@ -3831,7 +3831,7 @@
   }
 
   function renderSniperCard(s) {
-    if (!s || s.error) return _offlineCard('Sniper Bot', '🎯', 'ES — E22+E24 confluence (15m)');
+    if (!s || s.error) return _offlineCard('Sniper Bot', '🎯', 'MES — E22+E24 confluence (15m)');
     const card = document.createElement('div');
     card.className = 'livebot-card';
     const sig = s.signals || {};
@@ -3854,7 +3854,7 @@
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🎯 Sniper Bot <span class="badge-beta" style="font-size:10px">BETA</span></div>
-          <div class="livebot-sub">ES — E22 (ORB) + E24 (Gap Inv) AND15 — SHORT-only</div>
+          <div class="livebot-sub">MES — E22 (ORB) + E24 (Gap Inv) AND15 — SHORT-only</div>
         </div>
         ${_enginePairBadge(open, fb.armed)}
       </div>
@@ -4019,7 +4019,7 @@
 
   // ---- Iceberg card ----
   function renderIcebergCard(s) {
-    if (!s || s.error) return _offlineCard('Iceberg Bot', '🧊', 'MES — absorption confluence');
+    if (!s || s.error) return _offlineCard('Iceberg Bot', '🧊', 'ES — absorption confluence');
     const card = document.createElement('div');
     card.className = 'livebot-card';
     const tradesToday = s.trades_today ?? s.trades_fired ?? 0;
@@ -4058,7 +4058,7 @@
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🧊 Iceberg Bot <span class="badge-beta" style="font-size:10px">BETA</span>${shadowTag}</div>
-          <div class="livebot-sub">MES — absorption + confluence (bidirectional)</div>
+          <div class="livebot-sub">ES — absorption + confluence (bidirectional)</div>
         </div>
         ${dirPill}
       </div>
