@@ -1884,6 +1884,15 @@
       loadAccounts(),
     ]);
 
+    // 2026-06-08 (Layth): auto-refresh trades + P&L every 20s so new trades appear
+    // live without a manual reload (previously only loaded once on login).
+    if (!window._dashRefreshTimer) {
+      window._dashRefreshTimer = setInterval(() => {
+        loadDashboard();
+        loadTrades();
+      }, 20000);
+    }
+
     // Show admin nav if applicable
     const adminMeta = user.user_metadata || {};
     if (adminMeta.is_admin || adminMeta.admin) {
