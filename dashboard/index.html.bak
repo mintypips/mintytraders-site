@@ -2216,26 +2216,13 @@
       const pnl = Number(a.pnl ?? a.today_pnl ?? 0);
       const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
       const id = a.account_id || a.accountId || a.id || '—';
-      // Map internal broker keys to human-readable display labels
-      const BROKER_LABELS = {
-        tradecopia: 'Rithmic',
-        rithmic:    'Rithmic',
-        tradovate:  'Tradovate',
-        apex:       'Apex (Tradovate)',
-        pmt:        'PickMyTrade',
-        mt4:        'MT4',
-        mt5:        'MT5',
-        ninjatrader:'NinjaTrader',
-        tradelocker:'TradeLocker',
-      };
-      const rawBroker = (a.broker || '').toLowerCase();
-      const broker = a.broker_label || BROKER_LABELS[rawBroker] || a.broker || '—';
+      const broker = a.broker_label || a.broker || '—';
       const accId = a.id || a.account_uuid || i;
       return `<div class="account-card">
         <div class="account-info">
           <div class="broker">${broker}</div>
           <div class="id" style="font-weight:700;font-size:13px;color:var(--text)">${id}</div>
-          <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${a.firm ? a.firm + ' · ' : ''}${status.toUpperCase()}</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${status.toUpperCase()}</div>
         </div>
         <div class="account-meta">
           <div>
@@ -2453,16 +2440,14 @@
         </div>`;
       return;
     }
-    // Use radio buttons — client must pick exactly ONE account to trade on
-    wrap.innerHTML = `<p style="margin:0 0 10px;font-size:13px;color:var(--text-dim);">Select the account you want LIZA to trade. <strong>Pick one only</strong> — your funded/live account.</p>` +
-    accounts.map((a, i) => {
+    wrap.innerHTML = accounts.map(a => {
       const label = a.nickname ? `${a.name} (${a.nickname})` : a.name;
-      const bal = a.balance != null ? ` — ${fmtBalance(a.balance)}` : '';
-      const status = a.active ? '<span style="color:var(--mint);">● Active</span>' : '<span style="color:var(--text-dim);">Inactive</span>';
+      const bal = a.balance != null ? ` — Balance: ${fmtBalance(a.balance)}` : '';
+      const status = a.active ? '<span style="color: var(--success, #2e7d32);">✅ Active</span>' : '<span style="color: var(--text-dim);">Inactive</span>';
       return `
         <label style="display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid var(--border); cursor:pointer;">
-          <input type="radio" name="discovered-acct-radio" class="discovered-acct" value="${a.id}" ${i === 0 ? 'checked' : ''}>
-          <span style="flex:1;"><strong>${label}</strong>${bal} &nbsp;${status}</span>
+          <input type="checkbox" class="discovered-acct" value="${a.id}" ${a.active ? 'checked' : ''}>
+          <span style="flex:1;"><strong>${label}</strong>${bal} ${status}</span>
         </label>`;
     }).join('');
   }
@@ -2809,7 +2794,7 @@
     const alertEl = document.getElementById('addAccountAlert');
     alertEl.classList.add('hidden');
 
-    // Check for radio (single select) or checkboxes (multi), plus manual input fallback
+    // Check for checkboxes (auto-discovered accounts) OR manual input fallback
     let checked = Array.from(document.querySelectorAll('#discoveredAccounts input.discovered-acct:checked'))
       .map(cb => cb.value);
 
@@ -2823,7 +2808,7 @@
         alertEl.className = 'alert alert-error';
         alertEl.textContent = discoveredAccounts.length === 0
           ? 'Enter your Rithmic account ID (e.g. APEX-550285-64) to continue.'
-          : 'Select which account you want LIZA to trade on.';
+          : 'Select at least one account to connect.';
         alertEl.classList.remove('hidden');
         return;
       }
@@ -3051,66 +3036,14 @@
     if (!pmt_token || !rithmic_password || !wUrl) { showToast('All fields are required.', true); return; }
     const btn = document.getElementById('pmtSaveBtn');
     btn.disabled = true;
-
-    // Step 1: Discover accounts via backend /discover, which does a FRESH Rithmic
-    // login with the credentials just entered. Do NOT shortcut this with a local
-    // GET localhost:3001/accounts call — that endpoint ignores credentials
-    // entirely and just returns whatever's currently connected in the shared
-    // executor process (other clients' live/stale accounts). That caused a real
-    // bug 2026-07-21 where a client saw old Lucid test accounts under their own
-    // Apex login. Always go through credential-based discovery.
-    btn.innerHTML = '<span class="loader"></span> Searching accounts…';
-    let discovered = [];
-    let discoverError = null;
+    btn.textContent = 'Saving…';
     try {
-      const discResult = await apiPost('/api/accounts/discover', {
-        broker: 'rithmic',
-        credentials: { username: pmt_token, password: rithmic_password, system_name: wUrl }
+      const result = await apiPost('/api/accounts', {
+        broker: 'tradecopia',
+        rithmic_user: pmt_token,
+        rithmic_password: rithmic_password,
+        rithmic_system: wUrl
       });
-      if (discResult.success && discResult.data && discResult.data.accounts) {
-        discovered = discResult.data.accounts;
-      } else if (!discResult.success) {
-        discoverError = discResult.error || 'Could not fetch accounts. Check your credentials.';
-      }
-    } catch(err) { discoverError = err.message || 'Could not fetch accounts. Check your credentials.'; }
-
-    if (discoverError && !discovered.length) {
-      btn.disabled = false;
-      btn.textContent = 'Connect Account →';
-      showToast(discoverError, true);
-      return;
-    }
-
-    // If multiple accounts found, show picker before saving
-    if (discovered.length > 1) {
-      btn.disabled = false;
-      btn.textContent = 'Connect Account →';
-      // Store creds for after picker
-      pendingBroker = 'rithmic';
-      pendingCredentials = { username: pmt_token, password: rithmic_password, system_name: wUrl };
-      discoveredAccounts = discovered;
-      renderDiscoveredAccounts(discovered, null);
-      // Swap form view to Step 2 picker
-      document.getElementById('pmtSetupForm').classList.add('hidden');
-      document.getElementById('discoverStep').classList.remove('hidden');
-      document.getElementById('addAccountTitle').textContent = 'Select Account to Trade';
-      return;
-    }
-
-    // Single account or none — use it directly (or fall back to manual)
-    const accountId = discovered.length === 1 ? discovered[0].id : null;
-    btn.innerHTML = '<span class="loader"></span> Saving…';
-    try {
-      const payload = {
-        broker: 'rithmic',
-        credentials: { username: pmt_token, password: rithmic_password, system_name: wUrl },
-        accounts: accountId ? [accountId] : undefined,
-        account_id: (!accountId) ? pmt_token : undefined  // last-resort fallback only
-      };
-      // Clean up undefined keys
-      if (!payload.accounts) delete payload.accounts;
-      if (!payload.account_id) delete payload.account_id;
-      const result = await apiPost('/api/accounts', payload);
       if (result.success || result.accounts || result.account) {
         document.getElementById('addAccountModal').classList.add('hidden');
         document.getElementById('addAccountModal').classList.remove('show');
@@ -3889,39 +3822,14 @@
       status.innerHTML = `<span class="dot ${dotCls}"></span>${text}`;
     }
     grid.innerHTML = '';
-    // 2026-07-20 (Layth): full fleet consolidation. Iceberg/Apex/DarkPrint/DarkPool-OTC/
-    // Whale Scanner/Live Z-Score retired — UW/Databento/QuantData subscriptions being
-    // cancelled. Minty Bot (discretionary NQ, manual-fire) is now the only live card.
-    grid.appendChild(renderMintyBotCard(d.minty));
-  }
-
-  // ---- Minty Bot card (2026-07-20) ----
-  // Discretionary NQ, manually triggered by Layth via hotkey/Telegram.
-  // No auto-detection gates — just live price, open trade, and daily P&L.
-  function renderMintyBotCard(s) {
-    if (!s || s.error) return _offlineCard('Minty Bot', '🌿', 'NQ — discretionary, manual-fire');
-    const card = document.createElement('div');
-    card.className = 'livebot-card';
-    const open = s.open_trade;
-    const pnlPts = s.daily_pnl_pts;
-    const tradesToday = s.trades_today ?? 0;
-    const presets = s.presets || {};
-    const presetTxt = Object.entries(presets).map(([k, v]) => `${k.toUpperCase()}: ${v.stop_pts}/${v.tp_pts}`).join('  ·  ');
-    card.innerHTML = `
-      <div class="livebot-head">
-        <div>
-          <div class="livebot-title">🌿 Minty Bot <span class="badge-beta" style="font-size:10px;background:#1a7a3c;">⚡ LIVE</span></div>
-          <div class="livebot-sub">NQ — discretionary, manually triggered by Layth</div>
-        </div>
-        <span class="livebot-pill ${open ? 'armed' : 'flat'}">${open ? '🟢 IN TRADE' : '⏳ FLAT'}</span>
-      </div>
-      <div class="livebot-row"><span class="k">NQ Price</span><span class="v">${_fmtNum(s.nq_price)}</span></div>
-      <div class="livebot-row"><span class="k">Presets (stop/tp pts)</span><span class="v">${presetTxt || '—'}</span></div>
-      <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesToday}</span></div>
-      <div class="livebot-row"><span class="k">Day P&amp;L (pts)</span><span class="v ${_pnlClass(pnlPts)}">${_fmtSigned(pnlPts, 1)}</span></div>
-      ${_openTradeBox(open ? {direction: open.side, entry: open.entry, unrealized_pnl: s.unrealized_pnl_pts} : null, s.nq_price)}
-      ${_footer(s.updated_at)}`;
-    return card;
+    grid.appendChild(renderIcebergCard(d.iceberg));
+    // 2026-06-08: sniper retired (capped PF 1.18, can't pass eval solo) — card removed
+    grid.appendChild(renderWhaleScannerCard(d.whale_scanner));
+    grid.appendChild(renderDarkpoolCard(d.darkpool));
+    grid.appendChild(renderDarkprintBotCard(d.darkprint));
+    grid.appendChild(renderApexBotCard(d.apex));
+    grid.appendChild(renderLiveZscoreCard(d.live_zscore));
+    // 2026-05-28: confluence + vwap_reclaim cards retired from live grid
   }
 
   // ---- Sniper card ----
@@ -4375,17 +4283,6 @@
     const maxT    = Number(cfg.max_trades_day ?? 8);
     const macroOK = macro && macro.present && macro.trade_today && !_inAvoidWindow(macro.avoid_window);
     const lockOK  = !tr.locked_reason;
-    // NOPE gate (Net Options Pricing Effect — dealer hedging pressure, added 2026-07-05)
-    const nope       = s.nope_filter || {};
-    const nopeVal    = nope.nope_fill;
-    const nopeAge    = nope.age_s;
-    const nopeStale  = nopeVal == null || (nopeAge != null && nopeAge > 180);
-    const nopeDir    = nopeVal == null ? '—' : nopeVal > 0 ? '🐂 Bullish' : nopeVal < 0 ? '🐻 Bearish' : '➖ Flat';
-    const nopeClass  = nopeStale || nopeVal == null ? '' : (nopeVal > 0 ? 'v-pos' : nopeVal < 0 ? 'v-neg' : '');
-    const nopeStr    = nopeVal == null
-      ? 'unavailable'
-      : `${nopeDir} (${nopeVal > 0 ? '+' : ''}${nopeVal.toFixed(2)})${nopeStale ? ' ⚠️ stale' : ''}`;
-    const nopeGateOn = !!nope.gate_enabled;
     const fb = _enginePairBar([
       {label: `cluster (${prints})`, ok: prints > 0},
       {label: 'RTH',                 ok: !!mkt.is_rth},
@@ -4407,7 +4304,6 @@
       <div class="livebot-row"><span class="k">QD polling</span><span class="v ${qdOk ? 'v-pos' : 'v-neg'}">${qdAgo}</span></div>
       <div class="livebot-row"><span class="k">DataBento feed</span><span class="v ${dbOk ? 'v-pos' : 'v-neg'}">${dbOk ? '✅ healthy' : '⚠️ down'}</span></div>
       <div class="livebot-row"><span class="k">Trades today</span><span class="v">${tradesT} / ${maxT}</span></div>
-      <div class="livebot-row"><span class="k">NOPE ${nopeGateOn ? '🔒 gate' : '(log-only)'}</span><span class="v ${nopeClass}">${nopeStr}</span></div>
       <div class="livebot-row"><span class="k">Session P&amp;L</span><span class="v ${_pnlClass(tr.daily_pnl_usd)}">${_fmtSigned(tr.daily_pnl_usd, 0)}</span></div>
       ${tr.locked_reason ? `<div class="livebot-warn">🔒 ${tr.locked_reason}</div>` : ''}
       ${_recentPrintsBox(sig.recent_prints, sig.cluster_window_s, sig.instant_fire_m)}
