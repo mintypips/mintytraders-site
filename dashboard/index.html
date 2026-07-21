@@ -3899,7 +3899,7 @@
   // Discretionary NQ, manually triggered by Layth via hotkey/Telegram.
   // No auto-detection gates — just live price, open trade, and daily P&L.
   function renderMintyBotCard(s) {
-    if (!s || s.error) return _offlineCard('Minty Bot', '🌿', 'NQ — discretionary, manual-fire');
+    if (!s || s.error) return _offlineCard('Minty Bot', '🌿', 'NQ — live intraday signals');
     const card = document.createElement('div');
     card.className = 'livebot-card';
     const open = s.open_trade;
@@ -3911,7 +3911,7 @@
       <div class="livebot-head">
         <div>
           <div class="livebot-title">🌿 Minty Bot <span class="badge-beta" style="font-size:10px;background:#1a7a3c;">⚡ LIVE</span></div>
-          <div class="livebot-sub">NQ — discretionary, manually triggered by Layth</div>
+          <div class="livebot-sub">NQ — live intraday signals</div>
         </div>
         <span class="livebot-pill ${open ? 'armed' : 'flat'}">${open ? '🟢 IN TRADE' : '⏳ FLAT'}</span>
       </div>
